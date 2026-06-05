@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/bg_screen_green">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:orientation="vertical"
+        android:background="@drawable/bg_green_header"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nearby Masjid"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="28sp"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:id="@+id/textNearbySubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Showing masjid and surau near your location"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:layout_marginTop="6dp" />
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/listMasjid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="14dp"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="12dp" />
+
+</LinearLayout>

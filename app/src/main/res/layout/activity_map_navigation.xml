@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Placeholder map area -->
+    <TextView
+        android:id="@+id/mapPlaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="Google Map will appear here"
+        android:textColor="@color/text_gray"
+        android:textSize="18sp"
+        android:background="#DDEFE6" />
+
+    <!-- Top search card -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_white_card"
+        android:padding="16dp"
+        android:layout_margin="18dp">
+
+        <TextView
+            android:id="@+id/textDestinationName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Masjid Sultan Salahuddin Abdul Aziz Shah"
+            android:textColor="@color/text_dark"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/textRouteInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1.2 km • Estimated 5 min"
+            android:textColor="@color/text_gray"
+            android:textSize="13sp"
+            android:layout_marginTop="5dp" />
+
+    </LinearLayout>
+
+    <!-- Bottom navigation card -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="@drawable/bg_white_card"
+        android:padding="20dp"
+        android:layout_margin="18dp">
+
+        <TextView
+            android:id="@+id/textNavigationInstruction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Head towards the selected masjid"
+            android:textColor="@color/text_dark"
+            android:textStyle="bold"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/textArrivalStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You are not near the destination yet"
+            android:textColor="@color/text_gray"
+            android:textSize="13sp"
+            android:layout_marginTop="6dp" />
+
+        <Button
+            android:id="@+id/btnStartNavigation"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Start Navigation"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:background="@drawable/bg_green_button"
+            android:layout_marginTop="14dp" />
+
+    </LinearLayout>
+
+</FrameLayout>

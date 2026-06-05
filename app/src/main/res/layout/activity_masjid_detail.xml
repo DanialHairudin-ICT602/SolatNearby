@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_screen_green"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="210dp"
+            android:orientation="vertical"
+            android:background="@drawable/bg_green_header"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Masjid Detail"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textSize="30sp"
+                android:layout_marginTop="38dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View masjid information and start route guide"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginTop="-45dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_white_card"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:gravity="center"
+                    android:text="🕌"
+                    android:textSize="70sp"
+                    android:background="@drawable/bg_gold_badge" />
+
+                <TextView
+                    android:id="@+id/textDetailMasjidName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Masjid Sultan Salahuddin Abdul Aziz Shah"
+                    android:textColor="@color/text_dark"
+                    android:textStyle="bold"
+                    android:textSize="22sp"
+                    android:layout_marginTop="18dp" />
+
+                <TextView
+                    android:id="@+id/textDetailAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Shah Alam, Selangor"
+                    android:textColor="@color/text_gray"
+                    android:textSize="14sp"
+                    android:layout_marginTop="6dp" />
+
+                <TextView
+                    android:id="@+id/textDetailDistance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1.2 km away from your current location"
+                    android:textColor="@color/primary_green"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    android:layout_marginTop="10dp" />
+
+                <TextView
+                    android:id="@+id/textDetailInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Facilities: Prayer hall, parking area, wudhu area, toilet, and nearby food area."
+                    android:textColor="@color/text_dark"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="5dp"
+                    android:layout_marginTop="16dp" />
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnOpenMap"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_green_button"
+                android:text="Open Map Navigation"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnBackNearby"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_outline_green_button"
+                android:text="Back to Nearby List"
+                android:textAllCaps="false"
+                android:textColor="@color/primary_green"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
