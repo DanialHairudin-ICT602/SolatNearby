@@ -117,7 +117,10 @@
                     android:layout_margin="6dp"
                     android:orientation="vertical"
                     android:background="@drawable/bg_white_card"
-                    android:padding="16dp">
+                    android:padding="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -204,39 +207,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Daily reminder"
-                        android:textColor="@color/text_gray"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/cardNotification"
-                    android:layout_width="0dp"
-                    android:layout_height="130dp"
-                    android:layout_columnWeight="1"
-                    android:layout_margin="6dp"
-                    android:orientation="vertical"
-                    android:background="@drawable/bg_white_card"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🔔"
-                        android:textSize="28sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Notifications"
-                        android:textColor="@color/text_dark"
-                        android:textStyle="bold"
-                        android:textSize="15sp"
-                        android:layout_marginTop="10dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Prayer alerts"
                         android:textColor="@color/text_gray"
                         android:textSize="12sp" />
                 </LinearLayout>

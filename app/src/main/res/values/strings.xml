@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SolatNearby</string>
+    <string name="google_maps_key">AIzaSyCDxC7z_PmSXBZ4H6hZAL8oJf_hFx9DB3w</string>
 </resources>

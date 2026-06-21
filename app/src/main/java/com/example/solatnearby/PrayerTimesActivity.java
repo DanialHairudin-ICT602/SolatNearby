@@ -7,6 +7,6 @@ public class PrayerTimesActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_nearby_masjid);
+        setContentView(R.layout.activity_prayer_times);
     }
 }

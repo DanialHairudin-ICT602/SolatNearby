@@ -4,21 +4,51 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class ProfileActivity extends Activity {
 
-    Button btnSettings, btnLogout;
+    TextView textProfileName, textProfileEmail;
+    EditText editProfileName, editProfileEmail, editProfilePhone;
+    Button btnSaveProfile, btnLogout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        btnSettings = findViewById(R.id.btnSettings);
+        textProfileName = findViewById(R.id.textProfileName);
+        textProfileEmail = findViewById(R.id.textProfileEmail);
+
+        editProfileName = findViewById(R.id.editProfileName);
+        editProfileEmail = findViewById(R.id.editProfileEmail);
+        editProfilePhone = findViewById(R.id.editProfilePhone);
+
+        btnSaveProfile = findViewById(R.id.btnSaveProfile);
         btnLogout = findViewById(R.id.btnLogout);
 
-        btnSettings.setOnClickListener(v -> {
-            startActivity(new Intent(ProfileActivity.this, SettingsActivity.class));
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
+        btnSaveProfile.setOnClickListener(v -> {
+            String name = editProfileName.getText().toString().trim();
+            String email = editProfileEmail.getText().toString().trim();
+
+            if (name.isEmpty()) {
+                editProfileName.setError("Please enter name");
+                return;
+            }
+
+            if (email.isEmpty()) {
+                editProfileEmail.setError("Please enter email");
+                return;
+            }
+
+            textProfileName.setText(name);
+            textProfileEmail.setText(email);
+
+            Toast.makeText(this, "Profile updated for demo", Toast.LENGTH_SHORT).show();
         });
 
         btnLogout.setOnClickListener(v -> {

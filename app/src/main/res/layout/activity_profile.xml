@@ -10,13 +10,23 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- Header -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="210dp"
+            android:layout_height="230dp"
             android:orientation="vertical"
             android:background="@drawable/bg_green_header"
-            android:gravity="center"
             android:padding="24dp">
+
+            <TextView
+                android:id="@+id/btnBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="←"
+                android:textColor="@color/white"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:padding="4dp" />
 
             <TextView
                 android:layout_width="90dp"
@@ -24,83 +34,228 @@
                 android:gravity="center"
                 android:text="👤"
                 android:textSize="45sp"
-                android:background="@drawable/bg_gold_badge" />
+                android:background="@drawable/bg_gold_badge"
+                android:layout_gravity="center_horizontal" />
 
             <TextView
                 android:id="@+id/textProfileName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Demo User"
+                android:text="Ali Abu"
                 android:textColor="@color/white"
                 android:textStyle="bold"
-                android:textSize="24sp"
-                android:layout_marginTop="12dp" />
+                android:textSize="25sp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp" />
 
             <TextView
                 android:id="@+id/textProfileEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="demo@solatnearby.com"
+                android:text="aliabu@solatnearby.com"
                 android:textColor="@color/white"
                 android:textSize="13sp"
+                android:layout_gravity="center_horizontal"
                 android:layout_marginTop="4dp" />
 
         </LinearLayout>
 
+        <!-- Content -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="20dp"
+            android:layout_marginTop="-35dp">
 
+            <!-- Update Profile Card -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="@drawable/bg_white_card"
-                android:padding="18dp">
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Account Overview"
+                    android:text="Update Profile"
                     android:textColor="@color/text_dark"
                     android:textStyle="bold"
-                    android:textSize="19sp" />
+                    android:textSize="21sp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Saved favourite masjid: 0"
+                    android:text="Edit your account information below. This is a demo UI for the current progress."
                     android:textColor="@color/text_gray"
+                    android:textSize="13sp"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_marginTop="6dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Full Name"
+                    android:textColor="@color/text_dark"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginTop="18dp" />
+
+                <EditText
+                    android:id="@+id/editProfileName"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_white_card"
+                    android:hint="Enter full name"
+                    android:text="Ali Abu"
+                    android:inputType="textPersonName"
+                    android:padding="14dp"
+                    android:textColor="@color/text_dark"
+                    android:textColorHint="@color/text_gray" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Email Address"
+                    android:textColor="@color/text_dark"
+                    android:textStyle="bold"
                     android:textSize="14sp"
                     android:layout_marginTop="14dp" />
 
-                <TextView
+                <EditText
+                    android:id="@+id/editProfileEmail"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Notification status: Enabled"
-                    android:textColor="@color/text_gray"
-                    android:textSize="14sp"
-                    android:layout_marginTop="8dp" />
+                    android:layout_height="54dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_white_card"
+                    android:hint="Enter email"
+                    android:text="aliabu@solatnearby.com"
+                    android:inputType="textEmailAddress"
+                    android:padding="14dp"
+                    android:textColor="@color/text_dark"
+                    android:textColorHint="@color/text_gray" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Navigation mode: Walking / Driving"
-                    android:textColor="@color/text_gray"
+                    android:text="Phone Number"
+                    android:textColor="@color/text_dark"
+                    android:textStyle="bold"
                     android:textSize="14sp"
-                    android:layout_marginTop="8dp" />
+                    android:layout_marginTop="14dp" />
+
+                <EditText
+                    android:id="@+id/editProfilePhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_white_card"
+                    android:hint="Enter phone number"
+                    android:text="012-3456789"
+                    android:inputType="phone"
+                    android:padding="14dp"
+                    android:textColor="@color/text_dark"
+                    android:textColorHint="@color/text_gray" />
+
+            </LinearLayout>
+
+            <!-- Password Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_white_card"
+                android:padding="20dp"
+                android:layout_marginTop="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Change Password"
+                    android:textColor="@color/text_dark"
+                    android:textStyle="bold"
+                    android:textSize="21sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="This section will be connected to authentication later."
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"
+                    android:layout_marginTop="6dp" />
+
+                <EditText
+                    android:id="@+id/editOldPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_white_card"
+                    android:hint="Current password"
+                    android:inputType="textPassword"
+                    android:padding="14dp"
+                    android:textColor="@color/text_dark"
+                    android:textColorHint="@color/text_gray" />
+
+                <EditText
+                    android:id="@+id/editNewPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_white_card"
+                    android:hint="New password"
+                    android:inputType="textPassword"
+                    android:padding="14dp"
+                    android:textColor="@color/text_dark"
+                    android:textColorHint="@color/text_gray" />
+
+            </LinearLayout>
+
+            <!-- Preference Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_white_card"
+                android:padding="20dp"
+                android:layout_marginTop="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="User Preferences"
+                    android:textColor="@color/text_dark"
+                    android:textStyle="bold"
+                    android:textSize="21sp" />
+
+                <Switch
+                    android:id="@+id/switchSavedMasjid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Save favourite masjid"
+                    android:textColor="@color/text_dark"
+                    android:textSize="15sp"
+                    android:layout_marginTop="14dp" />
+
+                <Switch
+                    android:id="@+id/switchLocationPermission"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Allow location-based suggestions"
+                    android:textColor="@color/text_dark"
+                    android:textSize="15sp"
+                    android:layout_marginTop="10dp" />
 
             </LinearLayout>
 
             <Button
-                android:id="@+id/btnSettings"
+                android:id="@+id/btnSaveProfile"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="18dp"
                 android:background="@drawable/bg_green_button"
-                android:text="Open Settings"
+                android:text="Save Profile"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="16sp"
