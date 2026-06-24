@@ -112,51 +112,21 @@ public class NearbyMasjidActivity extends Activity {
 
             try {
                 String apiKey = getString(R.string.google_maps_key);
-                URL url = new URL("https://places.googleapis.com/v1/places:searchNearby");
+
+                String urlText = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+                        + "?location=" + currentLat + "," + currentLng
+                        + "&radius=5000"
+                        + "&type=mosque"
+                        + "&key=" + apiKey;
+
+                URL url = new URL(urlText);
 
                 connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setRequestProperty("X-Goog-Api-Key", apiKey);
-                connection.setRequestProperty(
-                        "X-Goog-FieldMask",
-                        "places.displayName,places.formattedAddress,places.location"
+                connection.setRequestMethod("GET");
+
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream())
                 );
-                connection.setDoOutput(true);
-
-                String body =
-                        "{"
-                                + "\"includedTypes\":[\"mosque\"],"
-                                + "\"maxResultCount\":10,"
-                                + "\"locationRestriction\":{"
-                                + "\"circle\":{"
-                                + "\"center\":{"
-                                + "\"latitude\":" + currentLat + ","
-                                + "\"longitude\":" + currentLng
-                                + "},"
-                                + "\"radius\":5000.0"
-                                + "}"
-                                + "}"
-                                + "}";
-
-                OutputStream outputStream = connection.getOutputStream();
-                outputStream.write(body.getBytes());
-                outputStream.flush();
-                outputStream.close();
-
-                int responseCode = connection.getResponseCode();
-
-                BufferedReader reader;
-
-                if (responseCode >= 200 && responseCode < 300) {
-                    reader = new BufferedReader(
-                            new InputStreamReader(connection.getInputStream())
-                    );
-                } else {
-                    reader = new BufferedReader(
-                            new InputStreamReader(connection.getErrorStream())
-                    );
-                }
 
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -167,50 +137,58 @@ public class NearbyMasjidActivity extends Activity {
 
                 reader.close();
 
-                if (responseCode < 200 || responseCode >= 300) {
+                JSONObject jsonObject = new JSONObject(response.toString());
+
+                String status = jsonObject.optString("status", "");
+                String errorMessage = jsonObject.optString("error_message", "");
+
+                android.util.Log.e("PLACES_API", "STATUS: " + status);
+                android.util.Log.e("PLACES_API", "ERROR MESSAGE: " + errorMessage);
+                android.util.Log.e("PLACES_API", "FULL RESPONSE: " + response.toString());
+
+                if (!status.equals("OK") && !status.equals("ZERO_RESULTS")) {
                     runOnUiThread(() -> {
-                        textNearbySubtitle.setText("Google Places API error.");
+                        textNearbySubtitle.setText("Places API error: " + status);
+
                         Toast.makeText(
                                 this,
-                                "Places API failed. Check API key, billing, and enabled APIs.",
+                                "Places API failed: " + status,
                                 Toast.LENGTH_LONG
                         ).show();
                     });
                     return;
                 }
 
-                JSONObject jsonObject = new JSONObject(response.toString());
-                JSONArray places = jsonObject.optJSONArray("places");
+                JSONArray results = jsonObject.optJSONArray("results");
 
-                if (places == null || places.length() == 0) {
+                if (results == null || results.length() == 0) {
                     runOnUiThread(() -> {
                         textNearbySubtitle.setText("No nearby masjid found within 5 km.");
+
                         Toast.makeText(
                                 this,
-                                "No nearby masjid found from Google Maps.",
+                                "No nearby masjid found.",
                                 Toast.LENGTH_SHORT
                         ).show();
                     });
                     return;
                 }
 
-                for (int i = 0; i < places.length(); i++) {
-                    JSONObject place = places.getJSONObject(i);
+                for (int i = 0; i < results.length(); i++) {
+                    JSONObject place = results.getJSONObject(i);
 
-                    String name = place
-                            .getJSONObject("displayName")
-                            .getString("text");
+                    String placeId = place.optString("place_id", "");
+                    String name = place.optString("name", "Unknown Masjid");
+                    String address = place.optString("vicinity", "Address not available");
 
-                    String address = place.optString(
-                            "formattedAddress",
-                            "Address not available"
-                    );
+                    JSONObject geometry = place.getJSONObject("geometry");
+                    JSONObject locationJson = geometry.getJSONObject("location");
 
-                    JSONObject locationJson = place.getJSONObject("location");
-                    double lat = locationJson.getDouble("latitude");
-                    double lng = locationJson.getDouble("longitude");
+                    double lat = locationJson.getDouble("lat");
+                    double lng = locationJson.getDouble("lng");
 
                     float[] distanceResult = new float[1];
+
                     Location.distanceBetween(
                             currentLat,
                             currentLng,
@@ -220,16 +198,18 @@ public class NearbyMasjidActivity extends Activity {
                     );
 
                     double km = distanceResult[0] / 1000.0;
-                    String distanceText = String.format("%.1f km away", km);
+                    String distanceText = String.format(java.util.Locale.getDefault(), "%.1f km away", km);
 
-                    addMasjid(
-                            name,
-                            address,
-                            distanceText,
-                            "Information gathered from Google Places API.",
-                            lat,
-                            lng
-                    );
+                    HashMap<String, String> masjid = new HashMap<>();
+                    masjid.put("placeId", placeId);
+                    masjid.put("name", name);
+                    masjid.put("address", address);
+                    masjid.put("distance", distanceText);
+                    masjid.put("facilities", "Information gathered from Google Places API.");
+                    masjid.put("lat", String.valueOf(lat));
+                    masjid.put("lng", String.valueOf(lng));
+
+                    masjidList.add(masjid);
                 }
 
                 runOnUiThread(() -> {
@@ -238,8 +218,11 @@ public class NearbyMasjidActivity extends Activity {
                 });
 
             } catch (Exception e) {
+                android.util.Log.e("PLACES_API", "EXCEPTION: " + e.getMessage());
+
                 runOnUiThread(() -> {
                     textNearbySubtitle.setText("Unable to load nearby masjid.");
+
                     Toast.makeText(
                             this,
                             "Error loading Google Maps masjid data.",

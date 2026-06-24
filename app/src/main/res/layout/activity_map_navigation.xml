@@ -90,7 +90,7 @@
             android:id="@+id/btnStartNavigation"
             android:layout_width="match_parent"
             android:layout_height="54dp"
-            android:text="Open Google Maps Navigation"
+            android:text="Start Navigation"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textStyle="bold"
