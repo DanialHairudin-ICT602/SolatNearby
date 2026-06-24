@@ -43,7 +43,6 @@
         <activity android:name=".PrayerTimesActivity" android:exported="false" />
         <activity android:name=".ProfileActivity" android:exported="false" />
         <activity android:name=".SettingsActivity" android:exported="false" />
-
     </application>
 
 </manifest>

@@ -26,6 +26,7 @@
                 android:textSize="30sp"
                 android:textStyle="bold"
                 android:padding="4dp" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -59,13 +60,29 @@
                 android:background="@drawable/bg_white_card"
                 android:padding="20dp">
 
-                <TextView
+                <!-- Masjid photo / emoji fallback -->
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="160dp"
-                    android:gravity="center"
-                    android:text="🕌"
-                    android:textSize="70sp"
-                    android:background="@drawable/bg_gold_badge" />
+                    android:layout_height="180dp"
+                    android:background="@drawable/bg_gold_badge">
+
+                    <ImageView
+                        android:id="@+id/imageMasjidPhoto"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone"
+                        android:contentDescription="Masjid Photo" />
+
+                    <TextView
+                        android:id="@+id/textMasjidDetailEmoji"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="🕌"
+                        android:textSize="70sp" />
+
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/textDetailMasjidName"
@@ -114,6 +131,7 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="18dp"
                 android:background="@drawable/bg_green_button"
+                android:backgroundTint="@null"
                 android:text="Open Map Navigation"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
@@ -126,6 +144,7 @@
                 android:layout_height="54dp"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/bg_outline_green_button"
+                android:backgroundTint="@null"
                 android:text="Back to Nearby List"
                 android:textAllCaps="false"
                 android:textColor="@color/primary_green"

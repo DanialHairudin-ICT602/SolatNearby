@@ -1,65 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="120dp"
     android:orientation="horizontal"
     android:background="@drawable/bg_white_card"
-    android:padding="14dp"
-    android:gravity="center_vertical">
+    android:padding="12dp">
 
-    <ImageView
-        android:id="@+id/imgMasjid"
-        android:layout_width="62dp"
-        android:layout_height="62dp"
-        android:src="@drawable/ic_launcher_foreground"
-        android:scaleType="centerCrop"
-        android:background="@drawable/bg_gold_badge"
-        android:padding="8dp" />
+    <FrameLayout
+        android:layout_width="95dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_gold_badge">
+
+        <ImageView
+            android:id="@+id/imageMasjidThumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:contentDescription="Masjid image" />
+
+        <TextView
+            android:id="@+id/textMasjidEmoji"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="🕌"
+            android:textSize="42sp" />
+
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:paddingStart="14dp"
-        android:paddingEnd="10dp">
+        android:paddingStart="12dp"
+        android:gravity="center_vertical">
 
         <TextView
             android:id="@+id/textMasjidName"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Masjid Sultan Salahuddin Abdul Aziz Shah"
+            android:text="Masjid Name"
             android:textColor="@color/text_dark"
             android:textStyle="bold"
-            android:textSize="15sp" />
+            android:textSize="15sp"
+            android:maxLines="2" />
 
         <TextView
             android:id="@+id/textMasjidAddress"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Shah Alam, Selangor"
+            android:text="Address"
             android:textColor="@color/text_gray"
             android:textSize="12sp"
-            android:layout_marginTop="4dp" />
+            android:maxLines="2"
+            android:layout_marginTop="5dp" />
 
         <TextView
             android:id="@+id/textMasjidDistance"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="1.2 km away"
             android:textColor="@color/primary_green"
             android:textStyle="bold"
-            android:textSize="13sp"
+            android:textSize="12sp"
             android:layout_marginTop="6dp" />
 
     </LinearLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="›"
-        android:textColor="@color/primary_green"
-        android:textSize="30sp"
-        android:textStyle="bold" />
 
 </LinearLayout>

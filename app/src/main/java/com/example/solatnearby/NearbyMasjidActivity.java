@@ -20,7 +20,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -181,6 +180,14 @@ public class NearbyMasjidActivity extends Activity {
                     String name = place.optString("name", "Unknown Masjid");
                     String address = place.optString("vicinity", "Address not available");
 
+                    String photoReference = "";
+                    JSONArray photos = place.optJSONArray("photos");
+
+                    if (photos != null && photos.length() > 0) {
+                        JSONObject firstPhoto = photos.getJSONObject(0);
+                        photoReference = firstPhoto.optString("photo_reference", "");
+                    }
+
                     JSONObject geometry = place.getJSONObject("geometry");
                     JSONObject locationJson = geometry.getJSONObject("location");
 
@@ -198,7 +205,11 @@ public class NearbyMasjidActivity extends Activity {
                     );
 
                     double km = distanceResult[0] / 1000.0;
-                    String distanceText = String.format(java.util.Locale.getDefault(), "%.1f km away", km);
+                    String distanceText = String.format(
+                            java.util.Locale.getDefault(),
+                            "%.1f km away",
+                            km
+                    );
 
                     HashMap<String, String> masjid = new HashMap<>();
                     masjid.put("placeId", placeId);
@@ -208,6 +219,7 @@ public class NearbyMasjidActivity extends Activity {
                     masjid.put("facilities", "Information gathered from Google Places API.");
                     masjid.put("lat", String.valueOf(lat));
                     masjid.put("lng", String.valueOf(lng));
+                    masjid.put("photoReference", photoReference);
 
                     masjidList.add(masjid);
                 }
@@ -237,26 +249,6 @@ public class NearbyMasjidActivity extends Activity {
         }).start();
     }
 
-    private void addMasjid(
-            String name,
-            String address,
-            String distance,
-            String facilities,
-            double lat,
-            double lng
-    ) {
-        HashMap<String, String> masjid = new HashMap<>();
-
-        masjid.put("name", name);
-        masjid.put("address", address);
-        masjid.put("distance", distance);
-        masjid.put("facilities", facilities);
-        masjid.put("lat", String.valueOf(lat));
-        masjid.put("lng", String.valueOf(lng));
-
-        masjidList.add(masjid);
-    }
-
     private void displayMasjidList() {
         SimpleAdapter adapter = new SimpleAdapter(
                 this,
@@ -277,12 +269,14 @@ public class NearbyMasjidActivity extends Activity {
 
             Intent intent = new Intent(NearbyMasjidActivity.this, MasjidDetailActivity.class);
 
+            intent.putExtra("placeId", selectedMasjid.get("placeId"));
             intent.putExtra("name", selectedMasjid.get("name"));
             intent.putExtra("address", selectedMasjid.get("address"));
             intent.putExtra("distance", selectedMasjid.get("distance"));
             intent.putExtra("facilities", selectedMasjid.get("facilities"));
             intent.putExtra("lat", Double.parseDouble(selectedMasjid.get("lat")));
             intent.putExtra("lng", Double.parseDouble(selectedMasjid.get("lng")));
+            intent.putExtra("photoReference", selectedMasjid.get("photoReference"));
 
             startActivity(intent);
         });

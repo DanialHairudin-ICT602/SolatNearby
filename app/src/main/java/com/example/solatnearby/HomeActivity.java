@@ -10,7 +10,7 @@ import android.widget.Toast;
 public class HomeActivity extends Activity {
 
     private Button btnFindNearby;
-    private LinearLayout cardNearby, cardMap, cardPrayerTime, cardProfile, cardSettings;
+    private LinearLayout cardNearby, cardMap, cardPrayerTime, cardProfile, cardSettings, cardSavedMasjid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,10 +37,12 @@ public class HomeActivity extends Activity {
             cardMap.setClickable(true);
             cardMap.setFocusable(true);
 
-            // Map Guide should open nearby list first so user can choose masjid
             cardMap.setOnClickListener(v -> {
-                Toast.makeText(this, "Choose a masjid first", Toast.LENGTH_SHORT).show();
-                openNearbyMasjid();
+                Toast.makeText(this, "Opening map guide", Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(HomeActivity.this, MapNavigationActivity.class);
+                intent.putExtra("mode", "auto_nearest");
+                startActivity(intent);
             });
         }
 
