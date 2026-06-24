@@ -23,9 +23,12 @@ public class HomeActivity extends Activity {
         cardMap = findViewById(R.id.cardMap);
         cardPrayerTime = findViewById(R.id.cardPrayerTime);
         cardProfile = findViewById(R.id.cardProfile);
-        cardSettings = findViewById(R.id.cardSettings); // only if your XML still has Settings card
+        cardSettings = findViewById(R.id.cardSettings);
+        cardSavedMasjid = findViewById(R.id.cardSavedMasjid);
 
-        btnFindNearby.setOnClickListener(v -> openNearbyMasjid());
+        // Top button is now different from Nearby Masjid card
+        btnFindNearby.setText("Start Map Guide");
+        btnFindNearby.setOnClickListener(v -> openMapGuide());
 
         if (cardNearby != null) {
             cardNearby.setClickable(true);
@@ -36,14 +39,7 @@ public class HomeActivity extends Activity {
         if (cardMap != null) {
             cardMap.setClickable(true);
             cardMap.setFocusable(true);
-
-            cardMap.setOnClickListener(v -> {
-                Toast.makeText(this, "Opening map guide", Toast.LENGTH_SHORT).show();
-
-                Intent intent = new Intent(HomeActivity.this, MapNavigationActivity.class);
-                intent.putExtra("mode", "auto_nearest");
-                startActivity(intent);
-            });
+            cardMap.setOnClickListener(v -> openMapGuide());
         }
 
         if (cardPrayerTime != null) {
@@ -66,9 +62,23 @@ public class HomeActivity extends Activity {
             cardSettings.setOnClickListener(v ->
                     startActivity(new Intent(HomeActivity.this, SettingsActivity.class)));
         }
+
+        if (cardSavedMasjid != null) {
+            cardSavedMasjid.setClickable(true);
+            cardSavedMasjid.setFocusable(true);
+
+        }
     }
 
     private void openNearbyMasjid() {
         startActivity(new Intent(HomeActivity.this, NearbyMasjidActivity.class));
+    }
+
+    private void openMapGuide() {
+        Toast.makeText(this, "Opening nearest masjid route", Toast.LENGTH_SHORT).show();
+
+        Intent intent = new Intent(HomeActivity.this, MapNavigationActivity.class);
+        intent.putExtra("mode", "auto_nearest");
+        startActivity(intent);
     }
 }
