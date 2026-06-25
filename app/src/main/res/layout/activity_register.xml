@@ -97,17 +97,18 @@
                     android:textColor="@color/text_dark"
                     android:textColorHint="@color/text_gray" />
 
+
                 <Button
                     android:id="@+id/btnRegister"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="22dp"
-                    android:background="@drawable/bg_green_button"
+                    android:layout_height="54dp"
                     android:text="Register"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:backgroundTint="#0E8F5A"
+                    android:onClick="createUser"
+                    android:layout_marginTop="16dp" />
 
                 <TextView
                     android:id="@+id/textGoLogin"
@@ -118,7 +119,9 @@
                     android:textStyle="bold"
                     android:textSize="14sp"
                     android:layout_gravity="center"
-                    android:layout_marginTop="18dp" />
+                    android:layout_marginTop="18dp"
+                    android:clickable="true"
+                    android:focusable="true" />
 
             </LinearLayout>
 

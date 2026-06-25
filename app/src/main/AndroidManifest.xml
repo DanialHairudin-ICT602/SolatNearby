@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
     <!-- GPS / location -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-    <!-- API / Maps -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- API / Maps -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-    <!-- Android 13+ notification permission -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- Android 13+ notification permission -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -19,6 +14,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SolatNearby">
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -27,22 +25,37 @@
         <activity
             android:name=".LoginActivity"
             android:exported="true">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NearbyMasjidActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MasjidDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MapNavigationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PrayerTimesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
 
-        <activity android:name=".RegisterActivity" android:exported="false" />
-        <activity android:name=".HomeActivity" android:exported="false" />
-        <activity android:name=".NearbyMasjidActivity" android:exported="false" />
-        <activity android:name=".MasjidDetailActivity" android:exported="false" />
-        <activity android:name=".MapNavigationActivity" android:exported="false" />
-        <activity android:name=".PrayerTimesActivity" android:exported="false" />
-        <activity android:name=".ProfileActivity" android:exported="false" />
-        <activity android:name=".SettingsActivity" android:exported="false" />
     </application>
 
 </manifest>

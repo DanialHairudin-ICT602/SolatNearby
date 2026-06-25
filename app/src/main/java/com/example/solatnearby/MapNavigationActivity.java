@@ -33,6 +33,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -43,7 +45,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Locale;
-
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 public class MapNavigationActivity extends Activity implements OnMapReadyCallback {
 
     private static final int LOCATION_PERMISSION_CODE = 100;
@@ -84,7 +90,7 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         btnStartNavigation = findViewById(R.id.btnStartNavigation);
         btnStopNavigation = findViewById(R.id.btnStopNavigation);
 
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        findViewById(R.id.btnBack).setOnClickListener(v -> MapNavigationActivity.this.finish());
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -154,6 +160,7 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
             textArrivalStatus.setText("Detecting nearby masjid");
         }
     }
+
 
     @Override
     public void onMapReady(GoogleMap map) {
@@ -522,6 +529,8 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         navigationStarted = true;
         navigationPaused = false;
 
+        saveToHistory();
+
         btnStartNavigation.setText("Pause Navigation");
 
         if (btnStopNavigation != null) {
@@ -623,13 +632,6 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
 
                     speak("You have arrived.");
 
-                    try {
-                        NotificationHelper.showArrivalNotification(
-                                MapNavigationActivity.this,
-                                destinationName
-                        );
-                    } catch (Exception ignored) {
-                    }
 
                 } else if (!hasArrived && navigationStarted && !navigationPaused) {
                     textArrivalStatus.setText(String.format(
@@ -781,6 +783,41 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
             textToSpeech.shutdown();
         }
     }
+
+    private void saveToHistory() {
+        if (destinationName == null || destinationLatLng == null) return;
+
+        // Get current user
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseUser user = auth.getCurrentUser();
+
+        if (user == null) return;
+
+        // Get current date and time
+        String date = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
+        String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date());
+
+        // Create history object
+        History history = new History();
+        history.setUserId(user.getUid());
+        history.setMasjidName(destinationName);
+        history.setMasjidAddress("Nearby Masjid");
+        history.setMasjidLat(destinationLatLng.latitude);
+        history.setMasjidLng(destinationLatLng.longitude);
+        history.setDate(date);
+        history.setTime(time);
+        history.setUserNote("");
+        history.setFavorite(false);
+
+        // Save to Firebase
+        DatabaseReference databaseHistory = FirebaseDatabase.getInstance()
+                .getReference("history")
+                .child(user.getUid())
+                .push();
+
+        databaseHistory.setValue(history);
+    }
+
 
     @Override
     public void onRequestPermissionsResult(

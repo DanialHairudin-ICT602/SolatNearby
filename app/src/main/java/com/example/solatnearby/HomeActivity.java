@@ -26,22 +26,25 @@ public class HomeActivity extends Activity {
         cardSettings = findViewById(R.id.cardSettings);
         cardSavedMasjid = findViewById(R.id.cardSavedMasjid);
 
-        // Top button is now different from Nearby Masjid card
+        // Top button - Start Map Guide
         btnFindNearby.setText("Start Map Guide");
         btnFindNearby.setOnClickListener(v -> openMapGuide());
 
+        // Nearby Masjid Card
         if (cardNearby != null) {
             cardNearby.setClickable(true);
             cardNearby.setFocusable(true);
             cardNearby.setOnClickListener(v -> openNearbyMasjid());
         }
 
+        // Map Guide Card
         if (cardMap != null) {
             cardMap.setClickable(true);
             cardMap.setFocusable(true);
             cardMap.setOnClickListener(v -> openMapGuide());
         }
 
+        // Prayer Times Card
         if (cardPrayerTime != null) {
             cardPrayerTime.setClickable(true);
             cardPrayerTime.setFocusable(true);
@@ -49,6 +52,7 @@ public class HomeActivity extends Activity {
                     startActivity(new Intent(HomeActivity.this, PrayerTimesActivity.class)));
         }
 
+        // Profile Card
         if (cardProfile != null) {
             cardProfile.setClickable(true);
             cardProfile.setFocusable(true);
@@ -56,6 +60,7 @@ public class HomeActivity extends Activity {
                     startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
         }
 
+        // Settings Card
         if (cardSettings != null) {
             cardSettings.setClickable(true);
             cardSettings.setFocusable(true);
@@ -63,12 +68,18 @@ public class HomeActivity extends Activity {
                     startActivity(new Intent(HomeActivity.this, SettingsActivity.class)));
         }
 
+        // ⭐ Saved Masjid / History Card
         if (cardSavedMasjid != null) {
             cardSavedMasjid.setClickable(true);
             cardSavedMasjid.setFocusable(true);
-
+            cardSavedMasjid.setOnClickListener(v ->
+                    startActivity(new Intent(HomeActivity.this, HistoryActivity.class)));
         }
     }
+
+
+
+    // ============ METHODS ============
 
     private void openNearbyMasjid() {
         startActivity(new Intent(HomeActivity.this, NearbyMasjidActivity.class));

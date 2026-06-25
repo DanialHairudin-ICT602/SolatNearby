@@ -93,14 +93,14 @@
                 <Button
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="22dp"
-                    android:background="@drawable/bg_green_button"
+                    android:layout_height="54dp"
                     android:text="Login"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:backgroundTint="#0E8F5A"
+                    android:onClick="loginUser"
+                    android:layout_marginTop="16dp" />
 
                 <TextView
                     android:id="@+id/textGoRegister"
@@ -111,7 +111,9 @@
                     android:textStyle="bold"
                     android:textSize="14sp"
                     android:layout_gravity="center"
-                    android:layout_marginTop="18dp" />
+                    android:layout_marginTop="18dp"
+                    android:clickable="true"
+                    android:focusable="true" />
 
             </LinearLayout>
 
