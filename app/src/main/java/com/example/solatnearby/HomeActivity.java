@@ -1,14 +1,15 @@
 package com.example.solatnearby;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -19,11 +20,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends Activity {
 
-    private TextView textCurrentLocation;
-    private TextView textCurrentPrayer;
     private Button btnFindNearby;
+    private LinearLayout cardNearby, cardMap, cardPrayerTime, cardProfile, cardSettings, cardSavedMasjid;
+    private TextView textCurrentLocation, textCurrentPrayer;
     private FusedLocationProviderClient fusedLocationClient;
     private static final int LOCATION_PERMISSION_REQUEST = 100;
     private double currentLat = 0.0;
@@ -34,48 +35,78 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        // Initialize views
+        btnFindNearby = findViewById(R.id.btnFindNearby);
+        cardNearby = findViewById(R.id.cardNearby);
+        cardMap = findViewById(R.id.cardMap);
+        cardPrayerTime = findViewById(R.id.cardPrayerTime);
+        cardProfile = findViewById(R.id.cardProfile);
+        cardSettings = findViewById(R.id.cardSettings);
+        cardSavedMasjid = findViewById(R.id.cardSavedMasjid);
         textCurrentLocation = findViewById(R.id.textCurrentLocation);
         textCurrentPrayer = findViewById(R.id.textCurrentPrayer);
-        btnFindNearby = findViewById(R.id.btnFindNearby);
 
+        // Initialize location client
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        // Set default text
         textCurrentPrayer.setText("Loading prayer times...");
 
+        // Check permission and get location
         checkLocationPermission();
 
-        btnFindNearby.setOnClickListener(v -> {
-            if (currentLat != 0.0 && currentLng != 0.0) {
-                // Navigate to NearbyMasjidActivity
-            } else {
-                Toast.makeText(this, "Please wait, detecting location...", Toast.LENGTH_SHORT).show();
-            }
-        });
+        // Top button - Start Map Guide
+        btnFindNearby.setText("Start Map Guide");
+        btnFindNearby.setOnClickListener(v -> openMapGuide());
 
-        findViewById(R.id.cardNearby).setOnClickListener(v -> {
-            // Navigate to NearbyMasjidActivity
-        });
+        // Nearby Masjid Card
+        if (cardNearby != null) {
+            cardNearby.setClickable(true);
+            cardNearby.setFocusable(true);
+            cardNearby.setOnClickListener(v -> openNearbyMasjid());
+        }
 
-        findViewById(R.id.cardMap).setOnClickListener(v -> {
-            // Navigate to MapNavigationActivity
-        });
+        // Map Guide Card
+        if (cardMap != null) {
+            cardMap.setClickable(true);
+            cardMap.setFocusable(true);
+            cardMap.setOnClickListener(v -> openMapGuide());
+        }
 
-        findViewById(R.id.cardPrayerTime).setOnClickListener(v -> {
-            // Navigate to PrayerTimesActivity
-        });
+        // Prayer Times Card
+        if (cardPrayerTime != null) {
+            cardPrayerTime.setClickable(true);
+            cardPrayerTime.setFocusable(true);
+            cardPrayerTime.setOnClickListener(v ->
+                    startActivity(new Intent(HomeActivity.this, PrayerTimesActivity.class)));
+        }
 
-        findViewById(R.id.cardProfile).setOnClickListener(v -> {
-            // Navigate to ProfileActivity
-        });
+        // Profile Card
+        if (cardProfile != null) {
+            cardProfile.setClickable(true);
+            cardProfile.setFocusable(true);
+            cardProfile.setOnClickListener(v ->
+                    startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
+        }
 
-        findViewById(R.id.cardSavedMasjid).setOnClickListener(v -> {
-            // Navigate to HistoryActivity
-        });
+        // Settings Card
+        if (cardSettings != null) {
+            cardSettings.setClickable(true);
+            cardSettings.setFocusable(true);
+            cardSettings.setOnClickListener(v ->
+                    startActivity(new Intent(HomeActivity.this, SettingsActivity.class)));
+        }
 
-        findViewById(R.id.cardSettings).setOnClickListener(v -> {
-            // Navigate to SettingsActivity
-        });
+        // Saved Masjid / History Card
+        if (cardSavedMasjid != null) {
+            cardSavedMasjid.setClickable(true);
+            cardSavedMasjid.setFocusable(true);
+            cardSavedMasjid.setOnClickListener(v ->
+                    startActivity(new Intent(HomeActivity.this, HistoryActivity.class)));
+        }
     }
+
+    // ============ LOCATION METHODS ============
 
     private void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -104,7 +135,7 @@ public class HomeActivity extends AppCompatActivity {
                             fetchPrayerTimes(currentLat, currentLng);
                         } else {
                             textCurrentLocation.setText("Unable to get location. Using default.");
-                            currentLat = 3.1390;
+                            currentLat = 3.1390; // Kuala Lumpur default
                             currentLng = 101.6869;
                             fetchPrayerTimes(currentLat, currentLng);
                         }
@@ -112,10 +143,11 @@ public class HomeActivity extends AppCompatActivity {
                 });
     }
 
+    // ============ PRAYER TIME API ============
+
     private void fetchPrayerTimes(double lat, double lng) {
         PrayerApiService apiService = PrayerApiClient.getInstance().create(PrayerApiService.class);
 
-        // method=9 for JAKIM (Malaysia)
         Call<PrayerResponse> call = apiService.getPrayerTimesByCoordinates(lat, lng, 9);
         call.enqueue(new Callback<PrayerResponse>() {
             @Override
@@ -210,9 +242,23 @@ public class HomeActivity extends AppCompatActivity {
         return hour * 60 + minute;
     }
 
+    // ============ NAVIGATION METHODS ============
+
+    private void openNearbyMasjid() {
+        startActivity(new Intent(HomeActivity.this, NearbyMasjidActivity.class));
+    }
+
+    private void openMapGuide() {
+        Toast.makeText(this, "Opening nearest masjid route", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(HomeActivity.this, MapNavigationActivity.class);
+        intent.putExtra("mode", "auto_nearest");
+        startActivity(intent);
+    }
+
+    // ============ PERMISSION RESULT ============
+
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
