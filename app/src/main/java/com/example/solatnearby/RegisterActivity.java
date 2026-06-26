@@ -8,6 +8,7 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -29,6 +30,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     private EditText editFullName, editConfirmPassword;
 
+    private TextView textGoLogin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +48,9 @@ public class RegisterActivity extends AppCompatActivity {
 
         Button btnRegister = findViewById(R.id.btnRegister);
         btnRegister.setOnClickListener(v -> createUser(v));
+
+        textGoLogin = findViewById(R.id.textGoLogin);
+        textGoLogin.setOnClickListener(v -> finish());
 
         // -------------------------------------
         // SIMPLE EMAIL VALIDATION (live check)
