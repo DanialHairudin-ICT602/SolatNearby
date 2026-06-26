@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_white_card"
+    android:padding="16dp"
+    android:layout_margin="6dp"
+    android:elevation="2dp"
+    android:descendantFocusability="blocksDescendants">
+
+    <!-- Row 1: Masjid Name + ❤️ Favorite -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/textHistoryMasjidName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Masjid Name"
+            android:textColor="@color/text_dark"
+            android:textStyle="bold"
+            android:textSize="17sp" />
+
+        <ImageButton
+            android:id="@+id/btnFavorite"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:src="@android:drawable/btn_star_big_off"
+            android:contentDescription="❤️ Favorite"
+            android:padding="8dp"
+            android:focusable="true"
+            android:clickable="true" />
+
+    </LinearLayout>
+
+    <!-- Row 2: Address -->
+    <TextView
+        android:id="@+id/textHistoryAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="📍 Address"
+        android:textColor="@color/text_gray"
+        android:textSize="13sp"
+        android:layout_marginTop="4dp" />
+
+    <!-- Row 3: Date and Time -->
+    <TextView
+        android:id="@+id/textHistoryDateTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="📅 Date  •  🕐 Time"
+        android:textColor="@color/primary_green"
+        android:textSize="12sp"
+        android:layout_marginTop="2dp" />
+
+    <!-- Row 4: 💬 Comment Box - CLICKABLE to add comment -->
+    <TextView
+        android:id="@+id/textHistoryComment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="💬 Tap to add your personal note"
+        android:textColor="@color/text_gray"
+        android:textSize="13sp"
+        android:layout_marginTop="8dp"
+        android:padding="10dp"
+        android:background="#F0F8F0"
+        android:minHeight="40dp"
+        android:gravity="center_vertical"
+        android:clickable="true"
+        android:focusable="true"
+        android:backgroundTint="@null" />
+
+    <!-- Row 5: Navigate Button + Delete Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:gravity="end">
+
+
+        <!-- NEW: Navigate Button -->
+        <Button
+            android:id="@+id/btnNavigate"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Navigate"
+            android:textAllCaps="false"
+            android:textSize="13sp"
+            android:background="@drawable/bg_green_button"
+            android:textColor="@color/white"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
+            android:layout_marginEnd="8dp"
+            android:focusable="true"
+            android:clickable="true" />
+
+        <ImageButton
+            android:id="@+id/btnDelete"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:src="@android:drawable/ic_menu_delete"
+            android:contentDescription="🗑️ Delete"
+            android:padding="8dp"
+            android:focusable="true"
+            android:clickable="true" />
+
+    </LinearLayout>
+
+</LinearLayout>
