@@ -41,4 +41,41 @@ public class NotificationHelper {
 
         manager.notify(1001, builder.build());
     }
+
+    // New: prayer time alert
+    public static void showPrayerNotification(Context context, String prayerName) {
+        NotificationManager manager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager == null) return;
+
+        createChannel(manager);
+
+        Notification.Builder builder = getBuilder(context);
+        builder.setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Waktu Solat " + prayerName)
+                .setContentText("It's time for " + prayerName + " prayer. Don't forget to pray!")
+                .setAutoCancel(true);
+
+        manager.notify(prayerName.hashCode(), builder.build());
+    }
+
+    private static void createChannel(NotificationManager manager) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "SolatNearby Alerts",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("Arrival and prayer time alerts");
+            manager.createNotificationChannel(channel);
+        }
+    }
+
+    private static Notification.Builder getBuilder(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return new Notification.Builder(context, CHANNEL_ID);
+        } else {
+            return new Notification.Builder(context);
+        }
+    }
 }

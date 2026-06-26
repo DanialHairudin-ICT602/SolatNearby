@@ -151,6 +151,66 @@
                 android:padding="16dp"
                 android:layout_marginTop="8dp" />
 
+            <!-- Subuh -->
+            <TextView
+                android:id="@+id/tvSubuh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Subuh          5:52 AM"
+                android:textColor="@color/text_dark"
+                android:textSize="16sp"
+                android:background="@drawable/bg_white_card"
+                android:padding="16dp"
+                android:layout_marginTop="8dp" />
+
+            <!-- Zohor -->
+            <TextView
+                android:id="@+id/tvZohor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Zohor          1:15 PM"
+                android:textColor="@color/text_dark"
+                android:textSize="16sp"
+                android:background="@drawable/bg_white_card"
+                android:padding="16dp"
+                android:layout_marginTop="8dp" />
+
+            <!-- Asar -->
+            <TextView
+                android:id="@+id/tvAsar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Asar           4:35 PM"
+                android:textColor="@color/text_dark"
+                android:textSize="16sp"
+                android:background="@drawable/bg_white_card"
+                android:padding="16dp"
+                android:layout_marginTop="8dp" />
+
+            <!-- Maghrib -->
+            <TextView
+                android:id="@+id/tvMaghrib"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Maghrib        7:25 PM"
+                android:textColor="@color/text_dark"
+                android:textSize="16sp"
+                android:background="@drawable/bg_white_card"
+                android:padding="16dp"
+                android:layout_marginTop="8dp" />
+
+            <!-- Isyak -->
+            <TextView
+                android:id="@+id/tvIsyak"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Isyak          8:39 PM"
+                android:textColor="@color/text_dark"
+                android:textSize="16sp"
+                android:background="@drawable/bg_white_card"
+                android:padding="16dp"
+                android:layout_marginTop="8dp" />
+
         </LinearLayout>
 
     </LinearLayout>
