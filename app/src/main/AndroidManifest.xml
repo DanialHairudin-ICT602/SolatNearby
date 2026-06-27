@@ -12,9 +12,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/solatnearby"
         android:label="SolatNearby"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/solatnearby"
         android:supportsRtl="true"
         android:theme="@style/Theme.SolatNearby">
         <activity
@@ -26,14 +26,18 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".LoginActivity"
-            android:exported="true">
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.SolatNearby.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
@@ -61,6 +65,8 @@
 
         <receiver android:name=".PrayerReceiver"
             android:exported="false"/>
+
+
 
     </application>
 
