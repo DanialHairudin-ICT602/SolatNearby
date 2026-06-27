@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -33,7 +32,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
     private ListView listHistory;
     private HistoryAdapter adapter;
 
-    // ============ FIREBASE ============
+    //FIREBASE
     private FirebaseAuth auth;
     private FirebaseUser currentUser;
     private DatabaseReference databaseHistory;
@@ -73,11 +72,9 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
         textEmptyState = findViewById(R.id.textEmptyState);
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        // ============ INIT FIREBASE ============
+
         auth = FirebaseAuth.getInstance();
         currentUser = auth.getCurrentUser();
-
-
 
 
         if (currentUser == null) {
@@ -86,7 +83,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
             return;
         }
 
-        // Get reference to history node in Firebase
+
         databaseHistory = FirebaseDatabase.getInstance()
                 .getReference("history")
                 .child(currentUser.getUid());
@@ -98,21 +95,21 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
         adapter = new HistoryAdapter(this, currentDisplayList, this);
         listHistory.setAdapter(adapter);
 
-        // Tab click listeners
+
         btnTabAll.setOnClickListener(v -> showAllHistory());
         btnTabFavorites.setOnClickListener(v -> showFavorites());
 
-        // Default: Show All History
+
         btnTabAll.setBackgroundResource(R.drawable.bg_green_button);
         btnTabAll.setTextColor(getResources().getColor(android.R.color.white));
         btnTabFavorites.setBackgroundResource(R.drawable.bg_outline_green_button);
         btnTabFavorites.setTextColor(getResources().getColor(R.color.primary_green));
 
-        // Load data from Firebase
+
         loadHistoryFromFirebase();
     }
 
-    // ============ READ: Load from Firebase ============
+    //READ,LOAD FROM FIREBASE
     private void loadHistoryFromFirebase() {
         databaseHistory.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -123,7 +120,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
                 if (!dataSnapshot.exists()) {
                     showAllHistory();
                     textEmptyState.setVisibility(View.VISIBLE);
-                    textEmptyState.setText("📋 No history yet.\nNavigate to a masjid to save.");
+                    textEmptyState.setText(" No history yet.\nNavigate to a masjid to save.");
                     return;
                 }
 
@@ -155,7 +152,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
 
                 if (allHistoryList.isEmpty()) {
                     textEmptyState.setVisibility(View.VISIBLE);
-                    textEmptyState.setText("📋 No history yet.\nNavigate to a masjid to save.");
+                    textEmptyState.setText(" No history yet.\nNavigate to a masjid to save.");
                 } else {
                     textEmptyState.setVisibility(View.GONE);
                 }
@@ -169,7 +166,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
         });
     }
 
-    // ============ SHOW ALL HISTORY TAB ============
+    //SHOW ALL HISTORY
     private void showAllHistory() {
         btnTabAll.setBackgroundResource(R.drawable.bg_green_button);
         btnTabAll.setTextColor(getResources().getColor(android.R.color.white));
@@ -182,13 +179,13 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
 
         if (currentDisplayList.isEmpty()) {
             textEmptyState.setVisibility(View.VISIBLE);
-            textEmptyState.setText("📋 No history yet.\nNavigate to a masjid to save.");
+            textEmptyState.setText(" No history yet.\nNavigate to a masjid to save.");
         } else {
             textEmptyState.setVisibility(View.GONE);
         }
     }
 
-    // ============ SHOW FAVORITES TAB ============
+    //SHOW FAVORITES
     private void showFavorites() {
         btnTabFavorites.setBackgroundResource(R.drawable.bg_green_button);
         btnTabFavorites.setTextColor(getResources().getColor(android.R.color.white));
@@ -201,13 +198,13 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
 
         if (currentDisplayList.isEmpty()) {
             textEmptyState.setVisibility(View.VISIBLE);
-            textEmptyState.setText("❤️ No favorites yet.\nClick ❤️ on any masjid to add.");
+            textEmptyState.setText(" No favorites yet.\nClick star on any masjid to add.");
         } else {
             textEmptyState.setVisibility(View.GONE);
         }
     }
 
-    // ============ CREATE: Save to Firebase ============
+    //CREATE SAVE TO FIREBASE
     public void saveToHistory(String masjidName, String masjidAddress,
                               double masjidLat, double masjidLng) {
         if (currentUser == null) {
@@ -242,7 +239,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
         }
     }
 
-    // ============ UPDATE: ❤️ Favorite ============
+    //UPDATE FAVOURITE
     @Override
 
     public void onFavoriteClick(int position) {
@@ -276,13 +273,14 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
                         showAllHistory();
                     }
 
-                    Toast.makeText(this, newFavorite ? "❤️ Added to favorites" : "💔 Removed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, newFavorite ? " Added to favorites" : "Favourite Removed", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
-    // ============ UPDATE: 💬 Comment ============
+
+    //update Comment
 
 
     @Override
@@ -305,7 +303,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
         if (currentComment != null && !currentComment.isEmpty()) {
             input.setText(currentComment);
         }
-        input.setHint("Write your personal note here...");
+        input.setHint("Write your personal note here.");
         input.setMinLines(3);
         builder.setView(input);
 
@@ -344,7 +342,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
         builder.show();
     }
 
-    // ============ NAVIGATE ============
+    //NAVIGATE
     @Override
     public void onNavigateClick(int position) {
         HashMap<String, String> item = currentDisplayList.get(position);
@@ -359,7 +357,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
         startActivity(intent);
     }
 
-    // ============ DELETE ============
+    //DELETE
     @Override
     public void onDeleteClick(int position) {
         HashMap<String, String> item = currentDisplayList.get(position);
@@ -367,7 +365,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
         String masjidName = item.get("masjidName");
 
         new AlertDialog.Builder(this)
-                .setTitle("🗑️ Delete History")
+                .setTitle(" Delete History")
                 .setMessage("Delete history for " + masjidName + "?")
                 .setPositiveButton("Delete", (dialog, which) -> {
                     databaseHistory.child(id).removeValue()

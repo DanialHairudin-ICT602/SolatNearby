@@ -41,22 +41,12 @@
                 android:id="@+id/textProfileName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ali Abu"
+                android:text=" "
                 android:textColor="@color/white"
                 android:textStyle="bold"
-                android:textSize="25sp"
+                android:textSize="16sp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="10dp" />
-
-            <TextView
-                android:id="@+id/textProfileEmail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="aliabu@solatnearby.com"
-                android:textColor="@color/white"
-                android:textSize="13sp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="4dp" />
 
         </LinearLayout>
 
@@ -87,7 +77,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Edit your account information below. This is a demo UI for the current progress."
+                    android:text="Edit your account information"
                     android:textColor="@color/text_gray"
                     android:textSize="13sp"
                     android:lineSpacingExtra="4dp"
@@ -109,10 +99,11 @@
                     android:layout_marginTop="8dp"
                     android:background="@drawable/bg_white_card"
                     android:hint="Enter full name"
-                    android:text="Ali Abu"
+                    android:text=" "
                     android:inputType="textPersonName"
                     android:padding="14dp"
                     android:textColor="@color/text_dark"
+                    android:textSize="15sp"
                     android:textColorHint="@color/text_gray" />
 
                 <TextView
@@ -131,10 +122,13 @@
                     android:layout_marginTop="8dp"
                     android:background="@drawable/bg_white_card"
                     android:hint="Enter email"
-                    android:text="aliabu@solatnearby.com"
+                    android:text=" "
                     android:inputType="textEmailAddress"
-                    android:padding="14dp"
-                    android:textColor="@color/text_dark"
+                    android:enabled="false"
+                    android:focusable="false"
+                    android:padding="15dp"
+                    android:textColor="@color/text_gray"
+                    android:textSize="15sp"
                     android:textColorHint="@color/text_gray" />
 
                 <TextView
@@ -153,15 +147,15 @@
                     android:layout_marginTop="8dp"
                     android:background="@drawable/bg_white_card"
                     android:hint="Enter phone number"
-                    android:text="012-3456789"
+                    android:text=""
                     android:inputType="phone"
                     android:padding="14dp"
                     android:textColor="@color/text_dark"
+                    android:textSize="15sp"
                     android:textColorHint="@color/text_gray" />
 
             </LinearLayout>
 
-            <!-- Password Card -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -181,73 +175,69 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="This section will be connected to authentication later."
+                    android:text="Enter your current password and new password"
                     android:textColor="@color/text_gray"
                     android:textSize="13sp"
                     android:layout_marginTop="6dp" />
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Current Password"
+                    android:textColor="@color/text_dark"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginTop="14dp" />
+
                 <EditText
                     android:id="@+id/editOldPassword"
                     android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="8dp"
                     android:background="@drawable/bg_white_card"
-                    android:hint="Current password"
+                    android:hint="Enter current password"
                     android:inputType="textPassword"
-                    android:padding="14dp"
+                    android:padding="8dp"
+                    android:textSize="15sp"
                     android:textColor="@color/text_dark"
                     android:textColorHint="@color/text_gray" />
-
-                <EditText
-                    android:id="@+id/editNewPassword"
-                    android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_white_card"
-                    android:hint="New password"
-                    android:inputType="textPassword"
-                    android:padding="14dp"
-                    android:textColor="@color/text_dark"
-                    android:textColorHint="@color/text_gray" />
-
-            </LinearLayout>
-
-            <!-- Preference Card -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@drawable/bg_white_card"
-                android:padding="20dp"
-                android:layout_marginTop="16dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="User Preferences"
+                    android:text="New Password"
                     android:textColor="@color/text_dark"
                     android:textStyle="bold"
-                    android:textSize="21sp" />
-
-                <Switch
-                    android:id="@+id/switchSavedMasjid"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Save favourite masjid"
-                    android:textColor="@color/text_dark"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:layout_marginTop="14dp" />
 
-                <Switch
-                    android:id="@+id/switchLocationPermission"
+                <EditText
+                    android:id="@+id/editNewPassword"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Allow location-based suggestions"
-                    android:textColor="@color/text_dark"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_white_card"
+                    android:hint="Enter new password"
+                    android:inputType="textPassword"
+                    android:padding="8dp"
                     android:textSize="15sp"
-                    android:layout_marginTop="10dp" />
+                    android:textColor="@color/text_dark"
+                    android:textColorHint="@color/text_gray" />
+
+                <Button
+                    android:id="@+id/btnChangePassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_green_button"
+                    android:text="Change Password"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
+
 
             <Button
                 android:id="@+id/btnSaveProfile"
@@ -266,10 +256,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
                 android:layout_marginTop="10dp"
-                android:background="@drawable/bg_outline_green_button"
+                android:background="@drawable/bg_outline_red_button"
                 android:text="Logout"
                 android:textAllCaps="false"
-                android:textColor="@color/primary_green"
+                android:textColor="@color/danger_red"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 

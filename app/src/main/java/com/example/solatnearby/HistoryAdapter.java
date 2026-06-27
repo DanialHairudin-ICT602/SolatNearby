@@ -91,14 +91,14 @@ public class HistoryAdapter extends BaseAdapter {
         holder.textAddress.setText("📍 " + address);
         holder.textDateTime.setText("📅 " + date + "  •  🕐 " + time);
 
-        // 💬 Comment - Click to add/edit
+        // Comment
         if (comment != null && !comment.isEmpty()) {
             holder.textComment.setText("💬 " + comment);
         } else {
             holder.textComment.setText("💬 Tap to add your personal note");
         }
 
-        // ❤️ Favorite
+        //Favorite
         if ("true".equals(favorite)) {
             holder.btnFavorite.setImageResource(android.R.drawable.btn_star_big_on);
             holder.btnFavorite.setColorFilter(0xFFFF0000);
@@ -107,24 +107,22 @@ public class HistoryAdapter extends BaseAdapter {
             holder.btnFavorite.setColorFilter(0xFF888888);
         }
 
-        // ============ CLICK LISTENERS ============
 
-        // ❤️ Favorite - ONLY toggles favorite, DOES NOT navigate
         holder.btnFavorite.setOnClickListener(v -> {
             if (listener != null) listener.onFavoriteClick(position);
         });
 
-        // 💬 Comment Box - Opens comment dialog
+        //Comment
         holder.textComment.setOnClickListener(v -> {
             if (listener != null) listener.onCommentClick(position);
         });
 
-        // 🗺️ Navigate Button - Opens Map
+        //Navigate Button
         holder.btnNavigate.setOnClickListener(v -> {
             if (listener != null) listener.onNavigateClick(position);
         });
 
-        // 🗑️ Delete - Deletes history
+        //Delete
         holder.btnDelete.setOnClickListener(v -> {
             if (listener != null) listener.onDeleteClick(position);
         });

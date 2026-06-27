@@ -14,9 +14,15 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import java.util.HashMap;
+import java.util.Map;
+
+
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -52,9 +58,9 @@ public class RegisterActivity extends AppCompatActivity {
         textGoLogin = findViewById(R.id.textGoLogin);
         textGoLogin.setOnClickListener(v -> finish());
 
-        // -------------------------------------
-        // SIMPLE EMAIL VALIDATION (live check)
-        // -------------------------------------
+
+        //LIVE CHECK
+
         e1.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
@@ -71,9 +77,6 @@ public class RegisterActivity extends AppCompatActivity {
 
         });
 
-        // -------------------------------------
-        // SIMPLE PASSWORD VALIDATION (live check)
-        // -------------------------------------
         e2.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
@@ -102,10 +105,6 @@ public class RegisterActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-
-        // =============================================
-        // CONFIRM PASSWORD VALIDATION (live check)
-        // =============================================
         editConfirmPassword.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
@@ -129,7 +128,7 @@ public class RegisterActivity extends AppCompatActivity {
         String email = e1.getText().toString().trim();
         String password = e2.getText().toString().trim();
 
-        // Final validation before register
+
         if(email.isEmpty()){
             e1.setError("Email cannot be empty");
             e1.requestFocus();
@@ -186,6 +185,8 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
+
+
         // Firebase create user
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -193,6 +194,29 @@ public class RegisterActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful()){
                             Toast.makeText(getApplicationContext(),"User created successfully",Toast.LENGTH_SHORT).show();
+
+                            //Name to Firebase
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            if (user != null) {
+                                // Save to Realtime Database
+                                DatabaseReference databaseUsers = FirebaseDatabase.getInstance()
+                                        .getReference("users")
+                                        .child(user.getUid());
+
+                                Map<String, Object> userData = new HashMap<>();
+                                userData.put("fullName", fullName);
+                                userData.put("email", email);
+                                userData.put("phone", "");
+
+                                databaseUsers.setValue(userData);
+
+
+                                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                        .setDisplayName(fullName)
+                                        .build();
+                                user.updateProfile(profileUpdates);
+                            }
+
                             startActivity(new Intent(getApplicationContext(), LoginActivity.class));
                             finish();
                         } else {

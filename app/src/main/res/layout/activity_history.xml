@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:background="@drawable/bg_screen_green">
 
-    <!-- Header -->
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="160dp"
@@ -26,7 +26,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="📋 History"
+            android:text=" History"
             android:textColor="@color/white"
             android:textStyle="bold"
             android:textSize="28sp"
@@ -36,7 +36,7 @@
 
     </LinearLayout>
 
-    <!-- Tabs -->
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -49,7 +49,7 @@
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
-            android:text="📋 All History"
+            android:text=" All History"
             android:textAllCaps="false"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -62,7 +62,7 @@
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
-            android:text="❤️ Favorites"
+            android:text=" Favorites"
             android:textAllCaps="false"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -72,7 +72,7 @@
 
     </LinearLayout>
 
-    <!-- Empty State Text -->
+
     <TextView
         android:id="@+id/textEmptyState"
         android:layout_width="match_parent"
@@ -84,7 +84,7 @@
         android:padding="40dp"
         android:visibility="gone" />
 
-    <!-- List View -->
+
     <ListView
         android:id="@+id/listHistory"
         android:layout_width="match_parent"
