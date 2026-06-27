@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -22,8 +24,10 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 
 public class NearbyMasjidActivity extends Activity {
 
@@ -31,12 +35,16 @@ public class NearbyMasjidActivity extends Activity {
 
     private ListView listMasjid;
     private TextView textNearbySubtitle;
+    private EditText editSearchMasjid;
+    private Button btnSearchMasjid;
 
     private FusedLocationProviderClient fusedLocationClient;
     private final ArrayList<HashMap<String, String>> masjidList = new ArrayList<>();
 
     private double currentLat = 0;
     private double currentLng = 0;
+
+    private String currentSearchQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,10 +53,22 @@ public class NearbyMasjidActivity extends Activity {
 
         listMasjid = findViewById(R.id.listMasjid);
         textNearbySubtitle = findViewById(R.id.textNearbySubtitle);
+        editSearchMasjid = findViewById(R.id.editSearchMasjid);
+        btnSearchMasjid = findViewById(R.id.btnSearchMasjid);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
+        btnSearchMasjid.setOnClickListener(v -> {
+            currentSearchQuery = editSearchMasjid.getText().toString().trim();
+
+            if (currentLat == 0 || currentLng == 0) {
+                checkPermissionAndLoadMasjid();
+            } else {
+                searchNearbyMasjidFromPlacesAPI();
+            }
+        });
 
         checkPermissionAndLoadMasjid();
     }
@@ -83,7 +103,6 @@ public class NearbyMasjidActivity extends Activity {
                 currentLat = location.getLatitude();
                 currentLng = location.getLongitude();
 
-                textNearbySubtitle.setText("Searching nearby masjid from Google Maps...");
                 searchNearbyMasjidFromPlacesAPI();
             } else {
                 textNearbySubtitle.setText("Unable to detect GPS location.");
@@ -106,6 +125,12 @@ public class NearbyMasjidActivity extends Activity {
     private void searchNearbyMasjidFromPlacesAPI() {
         masjidList.clear();
 
+        if (currentSearchQuery == null || currentSearchQuery.trim().isEmpty()) {
+            textNearbySubtitle.setText("Searching nearby masjid route distance...");
+        } else {
+            textNearbySubtitle.setText("Searching: " + currentSearchQuery);
+        }
+
         new Thread(() -> {
             HttpURLConnection connection = null;
 
@@ -117,6 +142,10 @@ public class NearbyMasjidActivity extends Activity {
                         + "&radius=5000"
                         + "&type=mosque"
                         + "&key=" + apiKey;
+
+                if (currentSearchQuery != null && !currentSearchQuery.trim().isEmpty()) {
+                    urlText += "&keyword=" + URLEncoder.encode(currentSearchQuery, "UTF-8");
+                }
 
                 URL url = new URL(urlText);
 
@@ -143,17 +172,11 @@ public class NearbyMasjidActivity extends Activity {
 
                 android.util.Log.e("PLACES_API", "STATUS: " + status);
                 android.util.Log.e("PLACES_API", "ERROR MESSAGE: " + errorMessage);
-                android.util.Log.e("PLACES_API", "FULL RESPONSE: " + response.toString());
 
                 if (!status.equals("OK") && !status.equals("ZERO_RESULTS")) {
                     runOnUiThread(() -> {
                         textNearbySubtitle.setText("Places API error: " + status);
-
-                        Toast.makeText(
-                                this,
-                                "Places API failed: " + status,
-                                Toast.LENGTH_LONG
-                        ).show();
+                        Toast.makeText(this, "Places API failed: " + status, Toast.LENGTH_LONG).show();
                     });
                     return;
                 }
@@ -162,18 +185,15 @@ public class NearbyMasjidActivity extends Activity {
 
                 if (results == null || results.length() == 0) {
                     runOnUiThread(() -> {
-                        textNearbySubtitle.setText("No nearby masjid found within 5 km.");
-
-                        Toast.makeText(
-                                this,
-                                "No nearby masjid found.",
-                                Toast.LENGTH_SHORT
-                        ).show();
+                        textNearbySubtitle.setText("No masjid found.");
+                        Toast.makeText(this, "No nearby masjid found.", Toast.LENGTH_SHORT).show();
                     });
                     return;
                 }
 
-                for (int i = 0; i < results.length(); i++) {
+                int limit = Math.min(results.length(), 10);
+
+                for (int i = 0; i < limit; i++) {
                     JSONObject place = results.getJSONObject(i);
 
                     String placeId = place.optString("place_id", "");
@@ -194,28 +214,37 @@ public class NearbyMasjidActivity extends Activity {
                     double lat = locationJson.getDouble("lat");
                     double lng = locationJson.getDouble("lng");
 
-                    float[] distanceResult = new float[1];
+                    RouteInfo routeInfo = getDrivingRouteInfo(currentLat, currentLng, lat, lng);
 
-                    Location.distanceBetween(
-                            currentLat,
-                            currentLng,
-                            lat,
-                            lng,
-                            distanceResult
-                    );
+                    String distanceText;
+                    String durationText;
 
-                    double km = distanceResult[0] / 1000.0;
-                    String distanceText = String.format(
-                            java.util.Locale.getDefault(),
-                            "%.1f km away",
-                            km
-                    );
+                    if (routeInfo != null) {
+                        distanceText = routeInfo.distanceText + " route";
+                        durationText = routeInfo.durationText;
+                    } else {
+                        float[] distanceResult = new float[1];
+
+                        Location.distanceBetween(
+                                currentLat,
+                                currentLng,
+                                lat,
+                                lng,
+                                distanceResult
+                        );
+
+                        double km = distanceResult[0] / 1000.0;
+
+                        distanceText = String.format(Locale.getDefault(), "%.1f km direct", km);
+                        durationText = "";
+                    }
 
                     HashMap<String, String> masjid = new HashMap<>();
                     masjid.put("placeId", placeId);
                     masjid.put("name", name);
                     masjid.put("address", address);
                     masjid.put("distance", distanceText);
+                    masjid.put("duration", durationText);
                     masjid.put("facilities", "Information gathered from Google Places API.");
                     masjid.put("lat", String.valueOf(lat));
                     masjid.put("lng", String.valueOf(lng));
@@ -225,7 +254,12 @@ public class NearbyMasjidActivity extends Activity {
                 }
 
                 runOnUiThread(() -> {
-                    textNearbySubtitle.setText("Showing nearby masjid from Google Maps");
+                    if (currentSearchQuery == null || currentSearchQuery.trim().isEmpty()) {
+                        textNearbySubtitle.setText("Showing driving route distance from Google Maps");
+                    } else {
+                        textNearbySubtitle.setText("Search result for: " + currentSearchQuery);
+                    }
+
                     displayMasjidList();
                 });
 
@@ -234,12 +268,7 @@ public class NearbyMasjidActivity extends Activity {
 
                 runOnUiThread(() -> {
                     textNearbySubtitle.setText("Unable to load nearby masjid.");
-
-                    Toast.makeText(
-                            this,
-                            "Error loading Google Maps masjid data.",
-                            Toast.LENGTH_LONG
-                    ).show();
+                    Toast.makeText(this, "Error loading Google Maps masjid data.", Toast.LENGTH_LONG).show();
                 });
             } finally {
                 if (connection != null) {
@@ -247,6 +276,67 @@ public class NearbyMasjidActivity extends Activity {
                 }
             }
         }).start();
+    }
+
+    private RouteInfo getDrivingRouteInfo(double originLat, double originLng, double destLat, double destLng) {
+        HttpURLConnection connection = null;
+
+        try {
+            String apiKey = getString(R.string.google_maps_key);
+
+            String urlText = "https://maps.googleapis.com/maps/api/directions/json"
+                    + "?origin=" + originLat + "," + originLng
+                    + "&destination=" + destLat + "," + destLng
+                    + "&mode=driving"
+                    + "&key=" + apiKey;
+
+            URL url = new URL(urlText);
+
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream())
+            );
+
+            StringBuilder response = new StringBuilder();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+
+            reader.close();
+
+            JSONObject jsonObject = new JSONObject(response.toString());
+
+            String status = jsonObject.optString("status", "");
+
+            if (!status.equals("OK")) {
+                android.util.Log.e("NEARBY_DIRECTIONS", "STATUS: " + status);
+                return null;
+            }
+
+            JSONArray routes = jsonObject.getJSONArray("routes");
+            JSONObject route = routes.getJSONObject(0);
+
+            JSONArray legs = route.getJSONArray("legs");
+            JSONObject leg = legs.getJSONObject(0);
+
+            RouteInfo routeInfo = new RouteInfo();
+            routeInfo.distanceText = leg.getJSONObject("distance").getString("text");
+            routeInfo.durationText = leg.getJSONObject("duration").getString("text");
+
+            return routeInfo;
+
+        } catch (Exception e) {
+            android.util.Log.e("NEARBY_DIRECTIONS", "EXCEPTION: " + e.getMessage());
+            return null;
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
     }
 
     private void displayMasjidList() {
@@ -280,6 +370,11 @@ public class NearbyMasjidActivity extends Activity {
 
             startActivity(intent);
         });
+    }
+
+    private static class RouteInfo {
+        String distanceText;
+        String durationText;
     }
 
     @Override

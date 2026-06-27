@@ -7,10 +7,13 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.text.Html;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,12 +30,16 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -43,13 +50,12 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Locale;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+
 public class MapNavigationActivity extends Activity implements OnMapReadyCallback {
 
     private static final int LOCATION_PERMISSION_CODE = 100;
@@ -63,6 +69,10 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
     private TextView textDestinationName, textRouteInfo, textNavigationInstruction, textArrivalStatus;
     private Button btnStartNavigation, btnStopNavigation;
 
+    private EditText editMapSearch;
+    private Button btnMapSearch;
+    private View searchMapRow;
+
     private LatLng currentLatLng;
     private LatLng destinationLatLng;
 
@@ -70,12 +80,43 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
     private Marker destinationMarker;
 
     private String destinationName = "Selected Masjid";
-    private String firstInstruction = "Head towards the selected masjid";
+    private String firstInstruction = "Follow the route.";
 
     private boolean routeLoaded = false;
     private boolean navigationStarted = false;
     private boolean navigationPaused = false;
     private boolean hasArrived = false;
+    private boolean historySavedForThisRoute = false;
+
+    private Handler cameraFollowHandler = new Handler(Looper.getMainLooper());
+    private boolean cameraAutoFollow = false;
+    private boolean userMovedMapManually = false;
+
+    private ArrayList<LatLng> currentRoutePoints = new ArrayList<>();
+    private ArrayList<NavigationStep> navigationSteps = new ArrayList<>();
+    private int currentStepIndex = 0;
+    private String lastSpokenInstruction = "";
+
+    private final Runnable resumeCameraFollowRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (navigationStarted && !navigationPaused && currentLatLng != null) {
+                cameraAutoFollow = true;
+                userMovedMapManually = false;
+
+                textArrivalStatus.setText("Auto-follow resumed");
+                moveCameraToUserNavigationView();
+            }
+        }
+    };
+
+    private static class NavigationStep {
+        LatLng startPoint;
+        LatLng endPoint;
+        String distanceText;
+        int distanceMeters;
+        String simpleInstruction;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,7 +131,11 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         btnStartNavigation = findViewById(R.id.btnStartNavigation);
         btnStopNavigation = findViewById(R.id.btnStopNavigation);
 
-        findViewById(R.id.btnBack).setOnClickListener(v -> MapNavigationActivity.this.finish());
+        editMapSearch = findViewById(R.id.editMapSearch);
+        btnMapSearch = findViewById(R.id.btnMapSearch);
+        searchMapRow = findViewById(R.id.searchMapRow);
+
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -133,6 +178,24 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         if (btnStopNavigation != null) {
             btnStopNavigation.setOnClickListener(v -> stopNavigationAndGoNearby());
         }
+
+        if (btnMapSearch != null) {
+            btnMapSearch.setOnClickListener(v -> {
+                String query = editMapSearch.getText().toString().trim();
+
+                if (query.isEmpty()) {
+                    Toast.makeText(this, "Enter masjid name to search", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (currentLatLng == null) {
+                    Toast.makeText(this, "GPS is still loading. Please wait.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                searchMasjidOnMap(query);
+            });
+        }
     }
 
     private void getDestinationFromIntent() {
@@ -161,7 +224,6 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         }
     }
 
-
     @Override
     public void onMapReady(GoogleMap map) {
         googleMap = map;
@@ -169,7 +231,29 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         googleMap.getUiSettings().setZoomControlsEnabled(true);
         googleMap.getUiSettings().setMyLocationButtonEnabled(true);
 
+        setupCameraGestureListener();
         checkLocationPermission();
+    }
+
+    private void setupCameraGestureListener() {
+        if (googleMap == null) {
+            return;
+        }
+
+        googleMap.setOnCameraMoveStartedListener(reason -> {
+            if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE
+                    && navigationStarted
+                    && !navigationPaused) {
+
+                cameraAutoFollow = false;
+                userMovedMapManually = true;
+
+                textArrivalStatus.setText("Manual map view. Auto-follow in 10 seconds");
+
+                cameraFollowHandler.removeCallbacks(resumeCameraFollowRunnable);
+                cameraFollowHandler.postDelayed(resumeCameraFollowRunnable, 10000);
+            }
+        });
     }
 
     private void checkLocationPermission() {
@@ -286,67 +370,46 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
                     return;
                 }
 
-                JSONObject closestPlace = null;
-                double closestLat = 0;
-                double closestLng = 0;
-                float closestDistance = Float.MAX_VALUE;
-
-                for (int i = 0; i < results.length(); i++) {
-                    JSONObject place = results.getJSONObject(i);
-
-                    JSONObject geometry = place.getJSONObject("geometry");
-                    JSONObject locationJson = geometry.getJSONObject("location");
-
-                    double lat = locationJson.getDouble("lat");
-                    double lng = locationJson.getDouble("lng");
-
-                    float[] distanceResult = new float[1];
-
-                    Location.distanceBetween(
-                            currentLatLng.latitude,
-                            currentLatLng.longitude,
-                            lat,
-                            lng,
-                            distanceResult
-                    );
-
-                    if (distanceResult[0] < closestDistance) {
-                        closestDistance = distanceResult[0];
-                        closestPlace = place;
-                        closestLat = lat;
-                        closestLng = lng;
-                    }
-                }
+                JSONObject closestPlace = getClosestPlaceFromResults(results);
 
                 if (closestPlace == null) {
                     runOnUiThread(() -> {
                         textDestinationName.setText("No nearby masjid found");
                         textRouteInfo.setText("Unable to choose nearest masjid");
-                        Toast.makeText(
-                                this,
-                                "No valid masjid location found.",
-                                Toast.LENGTH_SHORT
-                        ).show();
+                        Toast.makeText(this, "No valid masjid location found.", Toast.LENGTH_SHORT).show();
                     });
                     return;
                 }
 
                 String name = closestPlace.optString("name", "Nearest Masjid");
 
-                double finalClosestLat = closestLat;
-                double finalClosestLng = closestLng;
-                float finalClosestDistance = closestDistance;
+                JSONObject geometry = closestPlace.getJSONObject("geometry");
+                JSONObject locationJson = geometry.getJSONObject("location");
+
+                double lat = locationJson.getDouble("lat");
+                double lng = locationJson.getDouble("lng");
+
+                float[] distanceResult = new float[1];
+
+                Location.distanceBetween(
+                        currentLatLng.latitude,
+                        currentLatLng.longitude,
+                        lat,
+                        lng,
+                        distanceResult
+                );
 
                 runOnUiThread(() -> {
                     destinationName = name;
-                    destinationLatLng = new LatLng(finalClosestLat, finalClosestLng);
+                    destinationLatLng = new LatLng(lat, lng);
 
-                    double km = finalClosestDistance / 1000.0;
+                    double km = distanceResult[0] / 1000.0;
 
                     textDestinationName.setText(destinationName);
-                    textRouteInfo.setText(String.format(Locale.getDefault(), "%.1f km away", km));
+                    textRouteInfo.setText(String.format(Locale.getDefault(), "%.1f km direct", km));
                     textArrivalStatus.setText("Closest masjid selected");
 
+                    resetNavigationStateForNewRoute();
                     setupMapMarkers();
                     fetchRouteFromDirectionsAPI();
                 });
@@ -369,6 +432,225 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
                 }
             }
         }).start();
+    }
+
+    private void searchMasjidOnMap(String query) {
+        textDestinationName.setText("Searching masjid...");
+        textRouteInfo.setText("Searching for " + query);
+        textNavigationInstruction.setText("Please wait while route is loading");
+        textArrivalStatus.setText("Searching Google Maps");
+
+        resetNavigationStateForNewRoute();
+
+        new Thread(() -> {
+            HttpURLConnection connection = null;
+
+            try {
+                String apiKey = getString(R.string.google_maps_key);
+                String encodedQuery = URLEncoder.encode(query, "UTF-8");
+
+                String urlText = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+                        + "?location=" + currentLatLng.latitude + "," + currentLatLng.longitude
+                        + "&radius=5000"
+                        + "&type=mosque"
+                        + "&keyword=" + encodedQuery
+                        + "&key=" + apiKey;
+
+                URL url = new URL(urlText);
+
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream())
+                );
+
+                StringBuilder response = new StringBuilder();
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+
+                reader.close();
+
+                JSONObject jsonObject = new JSONObject(response.toString());
+
+                String status = jsonObject.optString("status", "");
+                String errorMessage = jsonObject.optString("error_message", "");
+
+                android.util.Log.e("MAP_SEARCH", "STATUS: " + status);
+                android.util.Log.e("MAP_SEARCH", "ERROR MESSAGE: " + errorMessage);
+
+                if (!status.equals("OK")) {
+                    runOnUiThread(() -> {
+                        textDestinationName.setText("Search failed");
+                        textRouteInfo.setText("No route loaded");
+                        textArrivalStatus.setText("Try another masjid name");
+
+                        Toast.makeText(
+                                this,
+                                "Search failed: " + status,
+                                Toast.LENGTH_LONG
+                        ).show();
+                    });
+                    return;
+                }
+
+                JSONArray results = jsonObject.optJSONArray("results");
+
+                if (results == null || results.length() == 0) {
+                    runOnUiThread(() -> {
+                        textDestinationName.setText("No masjid found");
+                        textRouteInfo.setText("Try another name");
+                        textArrivalStatus.setText("No search result");
+
+                        Toast.makeText(
+                                this,
+                                "No masjid found for: " + query,
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    });
+                    return;
+                }
+
+                JSONObject closestPlace = getClosestPlaceFromResults(results);
+
+                if (closestPlace == null) {
+                    runOnUiThread(() -> {
+                        textDestinationName.setText("No valid masjid found");
+                        textRouteInfo.setText("Unable to get location");
+                        textArrivalStatus.setText("Search failed");
+                    });
+                    return;
+                }
+
+                String name = closestPlace.optString("name", "Selected Masjid");
+
+                JSONObject geometry = closestPlace.getJSONObject("geometry");
+                JSONObject locationJson = geometry.getJSONObject("location");
+
+                double lat = locationJson.getDouble("lat");
+                double lng = locationJson.getDouble("lng");
+
+                float[] distanceResult = new float[1];
+
+                Location.distanceBetween(
+                        currentLatLng.latitude,
+                        currentLatLng.longitude,
+                        lat,
+                        lng,
+                        distanceResult
+                );
+
+                runOnUiThread(() -> {
+                    destinationName = name;
+                    destinationLatLng = new LatLng(lat, lng);
+
+                    double km = distanceResult[0] / 1000.0;
+
+                    textDestinationName.setText(destinationName);
+                    textRouteInfo.setText(String.format(Locale.getDefault(), "%.1f km direct", km));
+                    textNavigationInstruction.setText("Loading driving route...");
+                    textArrivalStatus.setText("Masjid selected from search");
+
+                    resetNavigationStateForNewRoute();
+                    setupMapMarkers();
+                    fetchRouteFromDirectionsAPI();
+                });
+
+            } catch (Exception e) {
+                android.util.Log.e("MAP_SEARCH", "EXCEPTION: " + e.getMessage());
+
+                runOnUiThread(() -> {
+                    textDestinationName.setText("Search error");
+                    textRouteInfo.setText("Unable to search masjid");
+                    textArrivalStatus.setText("Try again");
+
+                    Toast.makeText(
+                            this,
+                            "Error searching masjid.",
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        }).start();
+    }
+
+    private JSONObject getClosestPlaceFromResults(JSONArray results) {
+        try {
+            JSONObject closestPlace = null;
+            float closestDistance = Float.MAX_VALUE;
+
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject place = results.getJSONObject(i);
+
+                JSONObject geometry = place.optJSONObject("geometry");
+                if (geometry == null) continue;
+
+                JSONObject locationJson = geometry.optJSONObject("location");
+                if (locationJson == null) continue;
+
+                double lat = locationJson.getDouble("lat");
+                double lng = locationJson.getDouble("lng");
+
+                float[] distanceResult = new float[1];
+
+                Location.distanceBetween(
+                        currentLatLng.latitude,
+                        currentLatLng.longitude,
+                        lat,
+                        lng,
+                        distanceResult
+                );
+
+                if (distanceResult[0] < closestDistance) {
+                    closestDistance = distanceResult[0];
+                    closestPlace = place;
+                }
+            }
+
+            return closestPlace;
+
+        } catch (Exception e) {
+            android.util.Log.e("PLACES_API", "CLOSEST PLACE ERROR: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private void resetNavigationStateForNewRoute() {
+        routeLoaded = false;
+        navigationStarted = false;
+        navigationPaused = false;
+        hasArrived = false;
+        historySavedForThisRoute = false;
+
+        cameraAutoFollow = false;
+        userMovedMapManually = false;
+        cameraFollowHandler.removeCallbacks(resumeCameraFollowRunnable);
+
+        currentStepIndex = 0;
+        lastSpokenInstruction = "";
+        navigationSteps.clear();
+        currentRoutePoints.clear();
+
+        btnStartNavigation.setText("Start Navigation");
+
+        if (btnStopNavigation != null) {
+            btnStopNavigation.setVisibility(View.GONE);
+        }
+
+        if (searchMapRow != null) {
+            searchMapRow.setVisibility(View.VISIBLE);
+        }
+
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+        }
     }
 
     private void setupMapMarkers() {
@@ -433,11 +715,12 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
 
                 android.util.Log.e("DIRECTIONS_API", "STATUS: " + status);
                 android.util.Log.e("DIRECTIONS_API", "ERROR MESSAGE: " + errorMessage);
-                android.util.Log.e("DIRECTIONS_API", "FULL RESPONSE: " + response.toString());
 
                 if (!status.equals("OK")) {
                     runOnUiThread(() -> {
                         textRouteInfo.setText("Route failed: " + status);
+                        textArrivalStatus.setText("Unable to load driving route");
+
                         Toast.makeText(
                                 this,
                                 "Directions API failed: " + status,
@@ -462,9 +745,42 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
 
                 JSONArray steps = leg.getJSONArray("steps");
 
-                if (steps.length() > 0) {
-                    String htmlInstruction = steps.getJSONObject(0).optString("html_instructions", "");
-                    firstInstruction = cleanHtml(htmlInstruction);
+                navigationSteps.clear();
+                currentStepIndex = 0;
+
+                for (int i = 0; i < steps.length(); i++) {
+                    JSONObject stepJson = steps.getJSONObject(i);
+
+                    NavigationStep step = new NavigationStep();
+
+                    JSONObject startLocationJson = stepJson.getJSONObject("start_location");
+                    JSONObject endLocationJson = stepJson.getJSONObject("end_location");
+
+                    step.startPoint = new LatLng(
+                            startLocationJson.getDouble("lat"),
+                            startLocationJson.getDouble("lng")
+                    );
+
+                    step.endPoint = new LatLng(
+                            endLocationJson.getDouble("lat"),
+                            endLocationJson.getDouble("lng")
+                    );
+
+                    step.distanceText = stepJson.getJSONObject("distance").getString("text");
+                    step.distanceMeters = stepJson.getJSONObject("distance").optInt("value", 0);
+
+                    String htmlInstruction = stepJson.optString("html_instructions", "");
+                    String cleanInstruction = cleanHtml(htmlInstruction);
+
+                    step.simpleInstruction = makeSimpleRoadInstruction(cleanInstruction);
+
+                    navigationSteps.add(step);
+                }
+
+                if (!navigationSteps.isEmpty()) {
+                    firstInstruction = buildLiveInstruction(navigationSteps.get(0));
+                } else {
+                    firstInstruction = "Follow the route.";
                 }
 
                 ArrayList<LatLng> routePoints = decodePolyline(encodedPolyline);
@@ -476,7 +792,13 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
 
                 runOnUiThread(() -> {
                     textRouteInfo.setText("Unable to load route");
-                    Toast.makeText(this, "Error loading route.", Toast.LENGTH_LONG).show();
+                    textArrivalStatus.setText("Route error");
+
+                    Toast.makeText(
+                            this,
+                            "Error loading route.",
+                            Toast.LENGTH_LONG
+                    ).show();
                 });
             } finally {
                 if (connection != null) {
@@ -491,13 +813,15 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
             return;
         }
 
+        currentRoutePoints = routePoints;
+
         googleMap.addPolyline(new PolylineOptions()
                 .addAll(routePoints)
                 .width(12f)
                 .color(Color.rgb(14, 143, 90))
                 .jointType(JointType.ROUND));
 
-        textRouteInfo.setText(distance + " • Estimated " + duration);
+        textRouteInfo.setText(distance + " route • Estimated " + duration);
         textNavigationInstruction.setText(firstInstruction);
         textArrivalStatus.setText("Route is ready");
 
@@ -529,7 +853,14 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         navigationStarted = true;
         navigationPaused = false;
 
-        saveToHistory();
+        cameraAutoFollow = true;
+        userMovedMapManually = false;
+        cameraFollowHandler.removeCallbacks(resumeCameraFollowRunnable);
+
+        if (!historySavedForThisRoute) {
+            saveToHistory();
+            historySavedForThisRoute = true;
+        }
 
         btnStartNavigation.setText("Pause Navigation");
 
@@ -537,8 +868,14 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
             btnStopNavigation.setVisibility(View.VISIBLE);
         }
 
-        textNavigationInstruction.setText(firstInstruction);
+        if (searchMapRow != null) {
+            searchMapRow.setVisibility(View.GONE);
+        }
+
+        updateNavigationStepText(true);
         textArrivalStatus.setText("Navigation started inside SolatNearby");
+
+        moveCameraToUserNavigationView();
 
         speak("Navigation started.");
     }
@@ -546,6 +883,10 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
     private void pauseNavigationMode() {
         navigationPaused = true;
         navigationStarted = false;
+
+        cameraAutoFollow = false;
+        userMovedMapManually = false;
+        cameraFollowHandler.removeCallbacks(resumeCameraFollowRunnable);
 
         btnStartNavigation.setText("Resume Navigation");
 
@@ -557,9 +898,17 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         navigationStarted = true;
         navigationPaused = false;
 
+        cameraAutoFollow = true;
+        userMovedMapManually = false;
+        cameraFollowHandler.removeCallbacks(resumeCameraFollowRunnable);
+
         btnStartNavigation.setText("Pause Navigation");
 
+        updateNavigationStepText(true);
         textArrivalStatus.setText("Navigation resumed");
+
+        moveCameraToUserNavigationView();
+
         speak("Navigation resumed.");
     }
 
@@ -567,6 +916,10 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         navigationStarted = false;
         navigationPaused = false;
         hasArrived = false;
+
+        cameraAutoFollow = false;
+        userMovedMapManually = false;
+        cameraFollowHandler.removeCallbacks(resumeCameraFollowRunnable);
 
         if (fusedLocationClient != null && locationCallback != null) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
@@ -632,15 +985,18 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
 
                     speak("You have arrived.");
 
-
                 } else if (!hasArrived && navigationStarted && !navigationPaused) {
+                    updateNavigationStepText(false);
+
                     textArrivalStatus.setText(String.format(
                             Locale.getDefault(),
                             "%.0f meters remaining",
                             distanceMeters
                     ));
 
-                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17));
+                    if (cameraAutoFollow && !userMovedMapManually) {
+                        moveCameraToUserNavigationView();
+                    }
                 }
             }
         };
@@ -654,6 +1010,308 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
                     getMainLooper()
             );
         }
+    }
+
+    private void updateNavigationStepText(boolean forceSpeak) {
+        if (navigationSteps == null || navigationSteps.isEmpty() || currentLatLng == null) {
+            textNavigationInstruction.setText(firstInstruction);
+            return;
+        }
+
+        if (currentStepIndex >= navigationSteps.size()) {
+            currentStepIndex = navigationSteps.size() - 1;
+        }
+
+        NavigationStep step = navigationSteps.get(currentStepIndex);
+
+        float[] toStepEnd = new float[1];
+
+        Location.distanceBetween(
+                currentLatLng.latitude,
+                currentLatLng.longitude,
+                step.endPoint.latitude,
+                step.endPoint.longitude,
+                toStepEnd
+        );
+
+        if (toStepEnd[0] <= 25 && currentStepIndex < navigationSteps.size() - 1) {
+            currentStepIndex++;
+            step = navigationSteps.get(currentStepIndex);
+
+            Location.distanceBetween(
+                    currentLatLng.latitude,
+                    currentLatLng.longitude,
+                    step.endPoint.latitude,
+                    step.endPoint.longitude,
+                    toStepEnd
+            );
+        }
+
+        String liveInstruction = buildLiveInstruction(step, toStepEnd[0]);
+
+        textNavigationInstruction.setText(liveInstruction);
+
+        if (forceSpeak || !liveInstruction.equals(lastSpokenInstruction)) {
+            lastSpokenInstruction = liveInstruction;
+            speak(liveInstruction);
+        }
+    }
+
+    private String buildLiveInstruction(NavigationStep step) {
+        if (step == null) {
+            return "Follow the route.";
+        }
+
+        return "In " + step.distanceText + ", " + step.simpleInstruction;
+    }
+
+    private String buildLiveInstruction(NavigationStep step, float meters) {
+        if (step == null) {
+            return "Follow the route.";
+        }
+
+        return "In " + formatMeters(meters) + ", " + step.simpleInstruction;
+    }
+
+    private String formatMeters(float meters) {
+        if (meters < 1000) {
+            return String.format(Locale.getDefault(), "%.0f meters", meters);
+        }
+
+        return String.format(Locale.getDefault(), "%.1f km", meters / 1000.0);
+    }
+
+    private String makeSimpleRoadInstruction(String rawInstruction) {
+        if (rawInstruction == null || rawInstruction.trim().isEmpty()) {
+            return "follow the route.";
+        }
+
+        String cleaned = rawInstruction
+                .replace("\n", " ")
+                .replace("Restricted usage road", "")
+                .replace("restricted usage road", "")
+                .replace("Destination will be on the left", "destination is on the left")
+                .replace("Destination will be on the right", "destination is on the right")
+                .trim();
+
+        cleaned = removeCardinalDirections(cleaned);
+
+        String lower = cleaned.toLowerCase(Locale.ROOT);
+        String roadName = extractRoadName(cleaned);
+
+        if (lower.contains("u-turn") || lower.contains("uturn")) {
+            return "make a U-turn.";
+        }
+
+        if (lower.contains("slight left")) {
+            return roadName.isEmpty() ? "keep left." : "keep left onto " + roadName + ".";
+        }
+
+        if (lower.contains("slight right")) {
+            return roadName.isEmpty() ? "keep right." : "keep right onto " + roadName + ".";
+        }
+
+        if (lower.contains("keep left")) {
+            return roadName.isEmpty() ? "keep left." : "keep left onto " + roadName + ".";
+        }
+
+        if (lower.contains("keep right")) {
+            return roadName.isEmpty() ? "keep right." : "keep right onto " + roadName + ".";
+        }
+
+        if (lower.contains("turn left") || lower.contains("left")) {
+            return roadName.isEmpty() ? "turn left." : "turn left onto " + roadName + ".";
+        }
+
+        if (lower.contains("turn right") || lower.contains("right")) {
+            return roadName.isEmpty() ? "turn right." : "turn right onto " + roadName + ".";
+        }
+
+        if (lower.contains("roundabout")) {
+            return "enter the roundabout.";
+        }
+
+        if (lower.contains("continue") || lower.contains("straight")) {
+            return roadName.isEmpty() ? "go straight." : "go straight on " + roadName + ".";
+        }
+
+        if (lower.contains("head") || lower.contains("go")) {
+            return roadName.isEmpty() ? "go straight." : "go straight on " + roadName + ".";
+        }
+
+        if (lower.contains("destination")) {
+            return "head to the destination.";
+        }
+
+        return roadName.isEmpty() ? "follow the route." : "go straight on " + roadName + ".";
+    }
+
+    private String removeCardinalDirections(String text) {
+        return text
+                .replaceAll("(?i)\\bnorthwest\\b", "")
+                .replaceAll("(?i)\\bnortheast\\b", "")
+                .replaceAll("(?i)\\bsouthwest\\b", "")
+                .replaceAll("(?i)\\bsoutheast\\b", "")
+                .replaceAll("(?i)\\bnorth\\b", "")
+                .replaceAll("(?i)\\bsouth\\b", "")
+                .replaceAll("(?i)\\beast\\b", "")
+                .replaceAll("(?i)\\bwest\\b", "")
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private String extractRoadName(String instruction) {
+        if (instruction == null || instruction.trim().isEmpty()) {
+            return "";
+        }
+
+        String text = instruction
+                .replace(".", "")
+                .replace(",", " ")
+                .replace("Restricted usage road", "")
+                .trim();
+
+        String lower = text.toLowerCase(Locale.ROOT);
+
+        String[] keywords = {
+                " onto ",
+                " on ",
+                " toward ",
+                " towards ",
+                " to stay on ",
+                " at "
+        };
+
+        for (String keyword : keywords) {
+            int index = lower.indexOf(keyword);
+
+            if (index != -1) {
+                String road = text.substring(index + keyword.length()).trim();
+
+                road = stopAtKeyword(road, " toward ");
+                road = stopAtKeyword(road, " towards ");
+                road = stopAtKeyword(road, " for ");
+                road = stopAtKeyword(road, " then ");
+                road = stopAtKeyword(road, " destination ");
+                road = stopAtKeyword(road, " restricted ");
+                road = stopAtKeyword(road, " continue ");
+                road = stopAtKeyword(road, " turn ");
+
+                road = removeCardinalDirections(road);
+
+                return limitWords(road, 6);
+            }
+        }
+
+        return "";
+    }
+
+    private String stopAtKeyword(String text, String keyword) {
+        String lower = text.toLowerCase(Locale.ROOT);
+        int index = lower.indexOf(keyword);
+
+        if (index != -1) {
+            return text.substring(0, index).trim();
+        }
+
+        return text;
+    }
+
+    private String limitWords(String text, int maxWords) {
+        if (text == null || text.trim().isEmpty()) {
+            return "";
+        }
+
+        String[] words = text.trim().split("\\s+");
+
+        if (words.length <= maxWords) {
+            return text.trim();
+        }
+
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < maxWords; i++) {
+            builder.append(words[i]);
+
+            if (i < maxWords - 1) {
+                builder.append(" ");
+            }
+        }
+
+        return builder.toString().trim();
+    }
+
+    private void moveCameraToUserNavigationView() {
+        if (googleMap == null || currentLatLng == null) {
+            return;
+        }
+
+        float bearing = getNavigationBearing();
+
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(currentLatLng)
+                .zoom(18f)
+                .tilt(45f)
+                .bearing(bearing)
+                .build();
+
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
+
+    private float getNavigationBearing() {
+        if (currentLatLng == null || destinationLatLng == null) {
+            return 0f;
+        }
+
+        LatLng targetPoint = destinationLatLng;
+
+        if (navigationSteps != null && !navigationSteps.isEmpty()) {
+            if (currentStepIndex >= navigationSteps.size()) {
+                currentStepIndex = navigationSteps.size() - 1;
+            }
+
+            targetPoint = navigationSteps.get(currentStepIndex).endPoint;
+        } else if (currentRoutePoints != null && !currentRoutePoints.isEmpty()) {
+            targetPoint = findNextRoutePoint();
+        }
+
+        Location currentLocation = new Location("current");
+        currentLocation.setLatitude(currentLatLng.latitude);
+        currentLocation.setLongitude(currentLatLng.longitude);
+
+        Location targetLocation = new Location("target");
+        targetLocation.setLatitude(targetPoint.latitude);
+        targetLocation.setLongitude(targetPoint.longitude);
+
+        return currentLocation.bearingTo(targetLocation);
+    }
+
+    private LatLng findNextRoutePoint() {
+        if (currentRoutePoints == null || currentRoutePoints.isEmpty() || currentLatLng == null) {
+            return destinationLatLng;
+        }
+
+        LatLng nextPoint = destinationLatLng;
+        float nearestDistance = Float.MAX_VALUE;
+
+        for (LatLng point : currentRoutePoints) {
+            float[] result = new float[1];
+
+            Location.distanceBetween(
+                    currentLatLng.latitude,
+                    currentLatLng.longitude,
+                    point.latitude,
+                    point.longitude,
+                    result
+            );
+
+            if (result[0] > 20 && result[0] < nearestDistance) {
+                nearestDistance = result[0];
+                nextPoint = point;
+            }
+        }
+
+        return nextPoint;
     }
 
     private void updateUserMarker() {
@@ -673,7 +1331,7 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
 
     private String cleanHtml(String html) {
         if (html == null) {
-            return "Head towards the selected masjid";
+            return "Follow the route.";
         }
 
         String cleaned;
@@ -687,7 +1345,7 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         cleaned = cleaned.replace("\n", " ").trim();
 
         if (cleaned.isEmpty()) {
-            return "Head towards the selected masjid";
+            return "Follow the route.";
         }
 
         return cleaned;
@@ -770,34 +1428,21 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        if (fusedLocationClient != null && locationCallback != null) {
-            fusedLocationClient.removeLocationUpdates(locationCallback);
-        }
-
-        if (textToSpeech != null) {
-            textToSpeech.stop();
-            textToSpeech.shutdown();
-        }
-    }
-
     private void saveToHistory() {
-        if (destinationName == null || destinationLatLng == null) return;
+        if (destinationName == null || destinationLatLng == null) {
+            return;
+        }
 
-        // Get current user
         FirebaseAuth auth = FirebaseAuth.getInstance();
         FirebaseUser user = auth.getCurrentUser();
 
-        if (user == null) return;
+        if (user == null) {
+            return;
+        }
 
-        // Get current date and time
         String date = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
         String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date());
 
-        // Create history object
         History history = new History();
         history.setUserId(user.getUid());
         history.setMasjidName(destinationName);
@@ -809,7 +1454,6 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         history.setUserNote("");
         history.setFavorite(false);
 
-        // Save to Firebase
         DatabaseReference databaseHistory = FirebaseDatabase.getInstance()
                 .getReference("history")
                 .child(user.getUid())
@@ -818,6 +1462,21 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         databaseHistory.setValue(history);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        cameraFollowHandler.removeCallbacks(resumeCameraFollowRunnable);
+
+        if (fusedLocationClient != null && locationCallback != null) {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+        }
+
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
+    }
 
     @Override
     public void onRequestPermissionsResult(

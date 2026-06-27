@@ -4,14 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Real Google Map -->
     <fragment
         android:id="@+id/mapFragment"
         android:name="com.google.android.gms.maps.MapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Back Button -->
     <TextView
         android:id="@+id/btnBack"
         android:layout_width="48dp"
@@ -25,7 +23,6 @@
         android:textStyle="bold"
         android:background="@drawable/bg_white_card" />
 
-    <!-- Top Destination Card -->
     <LinearLayout
         android:id="@+id/topDestinationCard"
         android:layout_width="match_parent"
@@ -55,9 +52,42 @@
             android:textSize="13sp"
             android:layout_marginTop="5dp" />
 
+        <LinearLayout
+            android:id="@+id/searchMapRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp">
+
+            <EditText
+                android:id="@+id/editMapSearch"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:hint="Search masjid"
+                android:singleLine="true"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_gray"
+                android:background="@drawable/bg_outline_green_button" />
+
+            <Button
+                android:id="@+id/btnMapSearch"
+                android:layout_width="88dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="8dp"
+                android:text="Go"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:background="@drawable/bg_green_button"
+                android:backgroundTint="@null" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
-    <!-- Bottom Navigation Card -->
     <LinearLayout
         android:id="@+id/bottomNavigationCard"
         android:layout_width="match_parent"
@@ -110,7 +140,6 @@
             android:backgroundTint="@null"
             android:layout_marginTop="10dp"
             android:visibility="gone" />
-
 
     </LinearLayout>
 
