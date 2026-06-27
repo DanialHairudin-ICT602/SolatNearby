@@ -3,6 +3,7 @@ package com.example.solatnearby;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -25,6 +26,8 @@ import java.util.Locale;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import android.app.Activity;
 
 public class PrayerTimesActivity extends AppCompatActivity {
 
@@ -60,6 +63,9 @@ public class PrayerTimesActivity extends AppCompatActivity {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         // Check permission and get location
+        checkLocationPermission();
+
+        requestNotificationPermission(); // notification
         checkLocationPermission();
     }
 
@@ -237,4 +243,16 @@ public class PrayerTimesActivity extends AppCompatActivity {
             }
         }
     }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        101);
+            }
+        }
+    }
+
 }

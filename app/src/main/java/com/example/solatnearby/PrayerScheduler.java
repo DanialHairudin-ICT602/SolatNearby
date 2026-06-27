@@ -18,7 +18,7 @@ public class PrayerScheduler {
 
     public void schedule(String prayerName, String timeStr, int requestCode) {
         try {
-            // timeStr format from Aladhan: "05:43 (MYT)" — strip the timezone part
+            // Strip timezone: "05:43 (MYT)" → "05:43"
             String cleanTime = timeStr.split(" ")[0];
             String[] parts = cleanTime.split(":");
             int hour = Integer.parseInt(parts[0]);
@@ -28,9 +28,24 @@ public class PrayerScheduler {
             cal.set(Calendar.HOUR_OF_DAY, hour);
             cal.set(Calendar.MINUTE, minute);
             cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
 
-            // If the prayer time has already passed today, skip
-            if (cal.before(Calendar.getInstance())) return;
+            // Skip if already passed today
+            if (cal.before(Calendar.getInstance())) {
+                Log.d("PrayerScheduler", prayerName + " already passed, skipping.");
+                return;
+            }
+
+            AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            if (am == null) return;
+
+            // Android 12+ — check exact alarm permission first
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (!am.canScheduleExactAlarms()) {
+                    Log.e("PrayerScheduler", "Exact alarm permission not granted!");
+                    return;
+                }
+            }
 
             Intent intent = new Intent(context, PrayerReceiver.class);
             intent.putExtra("prayer_name", prayerName);
@@ -40,12 +55,13 @@ public class PrayerScheduler {
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
             );
 
-            AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
             } else {
                 am.setExact(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
             }
+
+            Log.d("PrayerScheduler", "Scheduled " + prayerName + " at " + cleanTime);
 
         } catch (Exception e) {
             Log.e("PrayerScheduler", "Error scheduling " + prayerName + ": " + e.getMessage());

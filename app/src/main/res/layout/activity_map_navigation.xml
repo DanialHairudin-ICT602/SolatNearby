@@ -17,7 +17,7 @@
         android:layout_marginStart="18dp"
         android:layout_marginTop="18dp"
         android:gravity="center"
-        android:text="←"
+        android:text="&lt;"
         android:textColor="@color/primary_green"
         android:textSize="30sp"
         android:textStyle="bold"
