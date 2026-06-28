@@ -9,6 +9,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- HEADER -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="190dp"
@@ -39,13 +40,14 @@
                 android:id="@+id/textPrayerLocation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Shah Alam, Selangor"
+                android:text="Getting location..."
                 android:textColor="@color/white"
                 android:textSize="14sp"
                 android:layout_marginTop="8dp" />
 
         </LinearLayout>
 
+        <!-- BODY -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -53,6 +55,7 @@
             android:padding="20dp"
             android:layout_marginTop="-40dp">
 
+            <!-- NEXT PRAYER CARD -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -64,7 +67,7 @@
                     android:id="@+id/textNextPrayer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Next Prayer: Asar"
+                    android:text="Loading..."
                     android:textColor="@color/text_dark"
                     android:textStyle="bold"
                     android:textSize="20sp" />
@@ -73,7 +76,7 @@
                     android:id="@+id/textNextPrayerTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="4:35 PM"
+                    android:text="--:--"
                     android:textColor="@color/primary_green"
                     android:textStyle="bold"
                     android:textSize="30sp"
@@ -83,17 +86,18 @@
                     android:id="@+id/textReminderStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Push notification reminder enabled"
+                    android:text="Fetching prayer times..."
                     android:textColor="@color/text_gray"
                     android:textSize="13sp"
                     android:layout_marginTop="6dp" />
 
             </LinearLayout>
 
+            <!-- SECTION TITLE -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Today’s Prayer Schedule"
+                android:text="Today's Prayer Schedule"
                 android:textColor="@color/text_dark"
                 android:textStyle="bold"
                 android:textSize="18sp"
@@ -105,7 +109,7 @@
                 android:id="@+id/tvSubuh"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Fajr          5:52 AM"
+                android:text="Fajr           --:--"
                 android:textColor="@color/text_dark"
                 android:textSize="16sp"
                 android:background="@drawable/bg_white_card"
@@ -117,7 +121,7 @@
                 android:id="@+id/tvZohor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Dhuhr          1:15 PM"
+                android:text="Dhuhr          --:--"
                 android:textColor="@color/text_dark"
                 android:textSize="16sp"
                 android:background="@drawable/bg_white_card"
@@ -129,7 +133,7 @@
                 android:id="@+id/tvAsar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Asr           4:35 PM"
+                android:text="Asr            --:--"
                 android:textColor="@color/text_dark"
                 android:textSize="16sp"
                 android:background="@drawable/bg_white_card"
@@ -141,7 +145,7 @@
                 android:id="@+id/tvMaghrib"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Maghrib        7:25 PM"
+                android:text="Maghrib        --:--"
                 android:textColor="@color/text_dark"
                 android:textSize="16sp"
                 android:background="@drawable/bg_white_card"
@@ -153,7 +157,7 @@
                 android:id="@+id/tvIsyak"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Isha          8:39 PM"
+                android:text="Isha           --:--"
                 android:textColor="@color/text_dark"
                 android:textSize="16sp"
                 android:background="@drawable/bg_white_card"
