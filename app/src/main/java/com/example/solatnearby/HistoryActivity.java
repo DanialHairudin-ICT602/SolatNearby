@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -43,6 +44,10 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
 
     private Button btnTabAll, btnTabFavorites;
     private TextView textEmptyState;
+    private EditText editSearchHistory;
+    private Button btnSearchHistory;
+
+    private ArrayList<HashMap<String, String>> filteredList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +77,9 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
         textEmptyState = findViewById(R.id.textEmptyState);
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
+        editSearchHistory = findViewById(R.id.editSearchHistory);
+        btnSearchHistory = findViewById(R.id.btnSearchHistory);
+
 
         auth = FirebaseAuth.getInstance();
         currentUser = auth.getCurrentUser();
@@ -91,25 +99,78 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
         allHistoryList = new ArrayList<>();
         favoriteList = new ArrayList<>();
         currentDisplayList = new ArrayList<>();
+        filteredList = new ArrayList<>();
 
         adapter = new HistoryAdapter(this, currentDisplayList, this);
         listHistory.setAdapter(adapter);
 
-
         btnTabAll.setOnClickListener(v -> showAllHistory());
         btnTabFavorites.setOnClickListener(v -> showFavorites());
 
-
         btnTabAll.setBackgroundResource(R.drawable.bg_green_button);
-        btnTabAll.setTextColor(getResources().getColor(android.R.color.white));
+        btnTabAll.setTextColor(getColor(android.R.color.white));
         btnTabFavorites.setBackgroundResource(R.drawable.bg_outline_green_button);
-        btnTabFavorites.setTextColor(getResources().getColor(R.color.primary_green));
+        btnTabFavorites.setTextColor(getColor(R.color.primary_green));
 
+        btnSearchHistory.setOnClickListener(v -> {
+            String query = editSearchHistory.getText().toString().trim();
+            if (query.isEmpty()) {
+
+                if (btnTabFavorites.isPressed()) {
+                    showFavorites();
+                } else {
+                    showAllHistory();
+                }
+                return;
+            }
+            searchHistory(query);
+        });
 
         loadHistoryFromFirebase();
     }
 
-    //READ,LOAD FROM FIREBASE
+    //SEARCH
+    private void searchHistory(String query) {
+        String lowerQuery = query.toLowerCase(Locale.getDefault());
+        filteredList.clear();
+
+        ArrayList<HashMap<String, String>> sourceList;
+
+        if (btnTabFavorites.isPressed()) {
+            sourceList = favoriteList;
+        } else {
+            sourceList = allHistoryList;
+        }
+
+        for (HashMap<String, String> item : sourceList) {
+            String name = item.get("masjidName");
+            String address = item.get("masjidAddress");
+            String date = item.get("date");
+            String note = item.get("userNote");
+
+            if (name != null && name.toLowerCase(Locale.getDefault()).contains(lowerQuery) ||
+                    address != null && address.toLowerCase(Locale.getDefault()).contains(lowerQuery) ||
+                    date != null && date.toLowerCase(Locale.getDefault()).contains(lowerQuery) ||
+                    note != null && note.toLowerCase(Locale.getDefault()).contains(lowerQuery)) {
+
+                filteredList.add(item);
+            }
+        }
+
+        currentDisplayList.clear();
+        currentDisplayList.addAll(filteredList);
+        adapter.notifyDataSetChanged();
+
+        if (currentDisplayList.isEmpty()) {
+            textEmptyState.setVisibility(View.VISIBLE);
+            textEmptyState.setText(" No results found for: " + query);
+        } else {
+            textEmptyState.setVisibility(View.GONE);
+            Toast.makeText(this, " Found " + currentDisplayList.size() + " results for: " + query, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    //READ: LOAD FROM FIREBASE
     private void loadHistoryFromFirebase() {
         databaseHistory.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -140,7 +201,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
                         item.put("userNote", history.getUserNote());
                         item.put("favorite", String.valueOf(history.getFavorite()));
 
-                        allHistoryList.add(item);
+                        allHistoryList.add(0, item);
 
                         if (history.getFavorite()) {
                             favoriteList.add(item);
@@ -169,9 +230,9 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
     //SHOW ALL HISTORY
     private void showAllHistory() {
         btnTabAll.setBackgroundResource(R.drawable.bg_green_button);
-        btnTabAll.setTextColor(getResources().getColor(android.R.color.white));
+        btnTabAll.setTextColor(ContextCompat.getColor(this, android.R.color.white));
         btnTabFavorites.setBackgroundResource(R.drawable.bg_outline_green_button);
-        btnTabFavorites.setTextColor(getResources().getColor(R.color.primary_green));
+        btnTabFavorites.setTextColor(ContextCompat.getColor(this, R.color.primary_green));
 
         currentDisplayList.clear();
         currentDisplayList.addAll(allHistoryList);
@@ -250,7 +311,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
 
         databaseHistory.child(id).child("favorite").setValue(newFavorite)
                 .addOnSuccessListener(aVoid -> {
-                    // Update local list immediately
+
                     for (HashMap<String, String> historyItem : allHistoryList) {
                         if (historyItem.get("id").equals(id)) {
                             historyItem.put("favorite", String.valueOf(newFavorite));
@@ -258,7 +319,6 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
                         }
                     }
 
-                    // Refresh favorite list
                     favoriteList.clear();
                     for (HashMap<String, String> historyItem : allHistoryList) {
                         if ("true".equals(historyItem.get("favorite"))) {
@@ -266,23 +326,21 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
                         }
                     }
 
-                    // Refresh current view
-                    if (btnTabFavorites.isPressed()) {
+                    if (btnTabFavorites.getBackground().getConstantState() ==
+                            getDrawable(R.drawable.bg_green_button).getConstantState()) {
                         showFavorites();
                     } else {
                         showAllHistory();
                     }
 
-                    Toast.makeText(this, newFavorite ? " Added to favorites" : "Favourite Removed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, newFavorite ? " Added to favorites" : " Removed from favorites", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, " Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
-    //update Comment
-
-
+    //UPDATE COMMENT
     @Override
     public void onCommentClick(int position) {
         HashMap<String, String> item = currentDisplayList.get(position);
@@ -313,7 +371,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
             // Save to Firebase
             databaseHistory.child(id).child("userNote").setValue(newComment)
                     .addOnSuccessListener(aVoid -> {
-                        // Update local list immediately
+
                         for (HashMap<String, String> historyItem : allHistoryList) {
                             if (historyItem.get("id").equals(id)) {
                                 historyItem.put("userNote", newComment);
@@ -321,7 +379,6 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
                             }
                         }
 
-                        // Update current display list
                         for (HashMap<String, String> displayItem : currentDisplayList) {
                             if (displayItem.get("id").equals(id)) {
                                 displayItem.put("userNote", newComment);
@@ -329,7 +386,6 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
                             }
                         }
 
-                        // Refresh adapter
                         adapter.notifyDataSetChanged();
                         Toast.makeText(this, " Comment saved!", Toast.LENGTH_SHORT).show();
                     })
@@ -347,11 +403,13 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
     public void onNavigateClick(int position) {
         HashMap<String, String> item = currentDisplayList.get(position);
         String masjidName = item.get("masjidName");
+        String address = item.get("masjidAddress");
         double lat = Double.parseDouble(item.get("masjidLat"));
         double lng = Double.parseDouble(item.get("masjidLng"));
 
         Intent intent = new Intent(HistoryActivity.this, MapNavigationActivity.class);
         intent.putExtra("name", masjidName);
+        intent.putExtra("address", address);
         intent.putExtra("lat", lat);
         intent.putExtra("lng", lng);
         startActivity(intent);

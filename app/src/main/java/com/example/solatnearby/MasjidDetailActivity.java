@@ -100,12 +100,13 @@ public class MasjidDetailActivity extends Activity {
                 Toast.makeText(this, "Masjid location is not available.", Toast.LENGTH_SHORT).show();
                 return;
             }
-            saveToHistory();
+
 
             Intent intent = new Intent(MasjidDetailActivity.this, MapNavigationActivity.class);
 
             intent.putExtra("placeId", placeId);
             intent.putExtra("name", textDetailMasjidName.getText().toString());
+            intent.putExtra("address", textDetailAddress.getText().toString());
             intent.putExtra("lat", selectedLat);
             intent.putExtra("lng", selectedLng);
 
@@ -115,51 +116,7 @@ public class MasjidDetailActivity extends Activity {
         btnBackNearby.setOnClickListener(v -> finish());
     }
 
-    private void saveToHistory() {
-        String name = textDetailMasjidName.getText().toString();
-        String address = textDetailAddress.getText().toString();
-        double lat = selectedLat;
-        double lng = selectedLng;
 
-        // Get current user
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        FirebaseUser user = auth.getCurrentUser();
-
-        if (user == null) {
-            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Get current date and time
-        String date = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
-        String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date());
-
-        // Create history object
-        History history = new History();
-        history.setUserId(user.getUid());
-        history.setMasjidName(name);
-        history.setMasjidAddress(address);
-        history.setMasjidLat(lat);
-        history.setMasjidLng(lng);
-        history.setDate(date);
-        history.setTime(time);
-        history.setUserNote("");
-        history.setFavorite(false);
-
-        // Save to Firebase
-        DatabaseReference databaseHistory = FirebaseDatabase.getInstance()
-                .getReference("history")
-                .child(user.getUid())
-                .push();
-
-        databaseHistory.setValue(history)
-                .addOnSuccessListener(aVoid -> {
-                    // History saved silently
-                })
-                .addOnFailureListener(e -> {
-                    // Optional: log error
-                });
-    }
     private void loadMasjidPhoto(String photoReference) {
         new Thread(() -> {
             HttpURLConnection connection = null;

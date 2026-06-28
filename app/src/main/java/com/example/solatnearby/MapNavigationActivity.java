@@ -382,6 +382,7 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
                 }
 
                 String name = closestPlace.optString("name", "Nearest Masjid");
+                String address = closestPlace.optString("vicinity", "Nearby Masjid");
 
                 JSONObject geometry = closestPlace.getJSONObject("geometry");
                 JSONObject locationJson = geometry.getJSONObject("location");
@@ -402,6 +403,8 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
                 runOnUiThread(() -> {
                     destinationName = name;
                     destinationLatLng = new LatLng(lat, lng);
+
+                    getIntent().putExtra("address", address);
 
                     double km = distanceResult[0] / 1000.0;
 
@@ -526,12 +529,16 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
                 }
 
                 String name = closestPlace.optString("name", "Selected Masjid");
+                String address = closestPlace.optString("vicinity", "Nearby Masjid");
+
 
                 JSONObject geometry = closestPlace.getJSONObject("geometry");
                 JSONObject locationJson = geometry.getJSONObject("location");
 
                 double lat = locationJson.getDouble("lat");
                 double lng = locationJson.getDouble("lng");
+
+                getIntent().putExtra("address", address);
 
                 float[] distanceResult = new float[1];
 
@@ -1429,24 +1436,30 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
     }
 
     private void saveToHistory() {
-        if (destinationName == null || destinationLatLng == null) {
-            return;
-        }
+        if (destinationName == null || destinationLatLng == null) return;
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
         FirebaseUser user = auth.getCurrentUser();
 
-        if (user == null) {
-            return;
-        }
+        if (user == null) return;
 
         String date = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
         String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date());
 
+
+        String address = getIntent().getStringExtra("address");
+        if (address == null || address.isEmpty() || address.equals("Nearby Masjid")) {
+            address = textDestinationName.getText().toString();
+            if (address == null || address.isEmpty()) {
+                address = "Nearby Masjid";
+            }
+        }
+
+
         History history = new History();
         history.setUserId(user.getUid());
         history.setMasjidName(destinationName);
-        history.setMasjidAddress("Nearby Masjid");
+        history.setMasjidAddress(address);
         history.setMasjidLat(destinationLatLng.latitude);
         history.setMasjidLng(destinationLatLng.longitude);
         history.setDate(date);

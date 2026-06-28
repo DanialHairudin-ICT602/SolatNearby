@@ -32,11 +32,41 @@
             android:textSize="28sp"
             android:layout_marginTop="8dp" />
 
-
-
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@drawable/bg_white_card"
+        android:layout_margin="8dp">
 
+        <EditText
+            android:id="@+id/editSearchHistory"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:hint=" Search history"
+            android:padding="12dp"
+            android:background="@drawable/bg_white_card"
+            android:textColor="@color/text_dark"
+            android:textColorHint="@color/text_gray"
+            android:inputType="text" />
+
+        <Button
+            android:id="@+id/btnSearchHistory"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="Search"
+            android:textAllCaps="false"
+            android:background="@drawable/bg_green_button"
+            android:textColor="@color/white"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:layout_marginStart="8dp" />
+
+    </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
