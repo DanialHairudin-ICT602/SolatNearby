@@ -1468,8 +1468,9 @@ public class MapNavigationActivity extends Activity implements OnMapReadyCallbac
         history.setFavorite(false);
 
         DatabaseReference databaseHistory = FirebaseDatabase.getInstance()
-                .getReference("history")
+                .getReference("users")
                 .child(user.getUid())
+                .child("snHistory")
                 .push();
 
         databaseHistory.setValue(history);

@@ -93,8 +93,10 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
 
 
         databaseHistory = FirebaseDatabase.getInstance()
-                .getReference("history")
-                .child(currentUser.getUid());
+                .getReference("users")
+                .child(currentUser.getUid())
+                .child("snHistory");
+
 
         allHistoryList = new ArrayList<>();
         favoriteList = new ArrayList<>();
@@ -186,7 +188,6 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
                 }
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    // Get History object from Firebase
                     History history = snapshot.getValue(History.class);
 
                     if (history != null) {
@@ -222,7 +223,6 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(HistoryActivity.this, "Error loading: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-
             }
         });
     }
@@ -355,7 +355,7 @@ public class HistoryActivity extends Activity implements HistoryAdapter.OnHistor
         String currentComment = item.get("userNote");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("💬 Personal Note for " + masjidName);
+        builder.setTitle("Personal Note for " + masjidName);
 
         final EditText input = new EditText(this);
         if (currentComment != null && !currentComment.isEmpty()) {

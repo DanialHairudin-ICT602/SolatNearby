@@ -198,7 +198,8 @@ public class ProfileActivity extends Activity {
         userData.put("fullName", name);
         userData.put("phone", phone);
 
-        databaseUsers.setValue(userData)
+        databaseUsers.updateChildren(userData)
+
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, " Profile saved", Toast.LENGTH_SHORT).show();
                 })

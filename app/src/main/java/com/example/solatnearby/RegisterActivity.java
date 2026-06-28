@@ -19,6 +19,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.auth.UserProfileChangeRequest;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -186,8 +188,6 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
 
-
-        // Firebase create user
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
@@ -195,7 +195,6 @@ public class RegisterActivity extends AppCompatActivity {
                         if(task.isSuccessful()){
                             Toast.makeText(getApplicationContext(),"User created successfully",Toast.LENGTH_SHORT).show();
 
-                            //Name to Firebase
                             FirebaseUser user = mAuth.getCurrentUser();
                             if (user != null) {
                                 // Save to Realtime Database
@@ -207,6 +206,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 userData.put("fullName", fullName);
                                 userData.put("email", email);
                                 userData.put("phone", "");
+                                userData.put("snHistory", new ArrayList<>());
 
                                 databaseUsers.setValue(userData);
 
@@ -215,10 +215,17 @@ public class RegisterActivity extends AppCompatActivity {
                                         .setDisplayName(fullName)
                                         .build();
                                 user.updateProfile(profileUpdates);
-                            }
 
-                            startActivity(new Intent(getApplicationContext(), LoginActivity.class));
-                            finish();
+                                // WAIT 2 SECONDS
+                                new android.os.Handler().postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mAuth.signOut();
+                                        startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+                                        finish();
+                                    }
+                                }, 2000);
+                            }
                         } else {
                             Toast.makeText(getApplicationContext(),"Registration failed",Toast.LENGTH_SHORT).show();
                         }
