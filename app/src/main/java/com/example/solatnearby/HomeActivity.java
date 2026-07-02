@@ -15,7 +15,12 @@ import androidx.core.content.ContextCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+import android.location.Address;
+import android.location.Geocoder;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -131,7 +136,9 @@ public class HomeActivity extends Activity {
                         if (location != null) {
                             currentLat = location.getLatitude();
                             currentLng = location.getLongitude();
-                            textCurrentLocation.setText("Lat: " + currentLat + ", Lng: " + currentLng);
+
+                            showReadableAddress(currentLat, currentLng);
+
                             fetchPrayerTimes(currentLat, currentLng);
                         } else {
                             textCurrentLocation.setText("Unable to get location. Using default.");
@@ -144,7 +151,70 @@ public class HomeActivity extends Activity {
     }
 
     // ============ PRAYER TIME API ============
+    private void showReadableAddress(double latitude, double longitude) {
 
+        new Thread(() -> {
+
+            try {
+
+                Geocoder geocoder = new Geocoder(HomeActivity.this, Locale.getDefault());
+
+                List<Address> addresses =
+                        geocoder.getFromLocation(latitude, longitude, 1);
+
+                runOnUiThread(() -> {
+
+                    if (addresses != null && !addresses.isEmpty()) {
+
+                        Address address = addresses.get(0);
+
+                        String road = address.getThoroughfare();
+                        String area = address.getSubLocality();
+                        String city = address.getLocality();
+                        String state = address.getAdminArea();
+
+                        StringBuilder builder = new StringBuilder();
+
+                        if (road != null && !road.isEmpty()) {
+                            builder.append(road);
+                        }
+
+                        if (area != null && !area.isEmpty()) {
+                            if (builder.length() > 0) builder.append(", ");
+                            builder.append(area);
+                        }
+
+                        if (city != null && !city.isEmpty()) {
+                            if (builder.length() > 0) builder.append(", ");
+                            builder.append(city);
+                        }
+
+                        if (state != null && !state.isEmpty()) {
+                            if (builder.length() > 0) builder.append(", ");
+                            builder.append(state);
+                        }
+
+                        if (builder.length() == 0) {
+                            builder.append("Current Location");
+                        }
+
+                        textCurrentLocation.setText("📍 " + builder);
+
+                    } else {
+                        textCurrentLocation.setText("📍 Current Location");
+                    }
+
+                });
+
+            } catch (IOException e) {
+
+                runOnUiThread(() ->
+                        textCurrentLocation.setText("📍 Current Location"));
+
+            }
+
+        }).start();
+    }
     private void fetchPrayerTimes(double lat, double lng) {
         PrayerApiService apiService = PrayerApiClient.getInstance().create(PrayerApiService.class);
 
